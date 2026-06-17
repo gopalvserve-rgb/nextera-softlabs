@@ -1,0 +1,738 @@
+/**
+ * routes/webhooks.js — inbound webhook handlers
+ *
+ * Endpoints mounted by server.js:
+ *   GET  /hook/meta      — Meta subscription verification
+ *   POST /hook/meta      — Meta Lead Ads events
+ *   GET  /hook/whatsapp  — WhatsApp verify
+ *   POST /hook/whatsapp  — WhatsApp events
+ *   POST /hook/website   — HTML form -> lead (requires x-api-key)
+ *   POST /hook/other     — generic JSON lead ingest (requires x-api-key)
+ */
+const fetch = require('node-fetch');
+const db = require('../db/pg');
+
+const GRAPH = 'https://graph.facebook.com/v19.0';
+
+// -------------------- Meta verification (GET) --------------------
+async function metaVerify(req, res) {
+  const mode     = req.query['hub.mode'];
+  const token    = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  // Read from DB config first; fall back to env var so existing setups keep working.
+  const expected = (await db.getConfig('META_VERIFY_TOKEN', process.env.META_VERIFY_TOKEN || '')) || '';
+  if (mode === 'subscribe' && token === expected) {
+    return res.status(200).send(challenge);
+  }
+  return res.status(403).send('Verification failed');
+}
+
+// -------------------- Meta events (POST) -------------------------
+async function metaEvent(req, res) {
+  // Always 200 quickly so Meta doesn't retry.
+  res.status(200).send('EVENT_RECEIVED');
+  try {
+    const body = req.body || {};
+    await db.insert('webhook_log', { source: 'meta', payload: body, processed: 0 });
+
+    // ── Social Inbox path: Messenger/IG DMs ─────────────────────
+    // Meta delivers DM events with entry.messaging[] (Messenger) or
+    // entry.changes[].field === 'messages' (IG via webhook subscription).
+    // Fire-and-forget so leadgen processing continues even if this fails.
+    try {
+      const social = require('./social');
+      if (typeof social._handleInboundMessage === 'function') {
+        await social._handleInboundMessage(body);
+      }
+      // Phase S2 — also fan out comment events (field='feed' item='comment' for FB,
+      // field='comments' for IG).
+      if (typeof social._handleInboundComment === 'function') {
+        await social._handleInboundComment(body);
+      }
+    } catch (e) { console.warn('[meta] social inbound failed:', e.message); }
+
+    const entries = body.entry || [];
+    for (const entry of entries) {
+      for (const change of (entry.changes || [])) {
+        if (change.field !== 'leadgen') continue;
+        const leadgenId = change.value?.leadgen_id;
+        const pageId    = change.value?.page_id;
+        const formId    = change.value?.form_id;
+        if (!leadgenId) continue;
+        try {
+          await _processLeadgen(leadgenId, pageId, formId);
+          // LEADGEN_TRACE_v1 - mark as processed for diagnostics.
+          await db.insert('webhook_log', {
+            source: 'meta', payload: { leadgen_id: leadgenId, page_id: pageId, form_id: formId, status: 'lead_created' },
+            processed: 1
+          });
+        } catch (e) {
+          console.error('[meta] leadgen failed:', leadgenId, 'page=' + pageId, 'reason=' + e.message);
+          // Surface the failure in errorLogs so admins can see it without DB access.
+          try {
+            const errorLogs = require('../utils/errorLogs');
+            await errorLogs.logError({
+              source: 'fb_leadgen', severity: 'error',
+              message: 'FB lead ingest failed for leadgen_id=' + leadgenId + ' page_id=' + pageId,
+              context: { leadgen_id: leadgenId, page_id: pageId, form_id: formId, error: e.message, stack: (e.stack||'').split('\n').slice(0,5).join(' | ') }
+            });
+          } catch(_) {}
+          await db.insert('webhook_log', {
+            source: 'meta', payload: { leadgen_id: leadgenId, page_id: pageId, form_id: formId, error: e.message },
+            processed: 0, error: e.message
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[meta] event handler error:', e);
+  }
+}
+
+async function _processLeadgen(leadgenId, pageId, formId) {
+  // Resolve page-specific access token + the configured default operator/source/status
+  // for incoming Meta leads. Falls back to the legacy single-page token if the
+  // multi-page config isn't set up yet (back-compat for old deployments).
+  let ctx = { access_token: '', default_source: 'Facebook Lead Ad', default_user_id: null, default_status_id: null };
+  try {
+    const fb = require('./fb');
+    if (typeof fb._pageContextForWebhook === 'function') {
+      ctx = await fb._pageContextForWebhook(pageId);
+    }
+  } catch (_) { /* ignore — fall back below */ }
+  let pageToken = ctx.access_token;
+  if (!pageToken) {
+    pageToken = await db.getConfig('META_PAGE_ACCESS_TOKEN', '');
+  }
+  if (!pageToken) throw new Error('No access token for page ' + pageId + ' — admin must connect with Facebook and monitor this page.');
+
+  // FB_MAP_META_FIELDS_v1 — request ad/campaign/form metadata too so the
+  // admin can map page name, campaign id/name, ad id/name, form id into
+  // CRM standard or custom fields. Without this Graph only returns id +
+  // created_time + field_data, leaving us with no attribution context.
+  const r = await fetch(`${GRAPH}/${leadgenId}?fields=id,created_time,ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,form_id,field_data&access_token=${pageToken}`);
+  const j = await r.json();
+  if (j.error) throw new Error('Graph: ' + j.error.message);
+
+  const fieldData = j.field_data || [];
+  const payload = {};
+  fieldData.forEach(f => {
+    payload[f.name] = Array.isArray(f.values) ? f.values.join(', ') : f.values;
+  });
+  // FB_MAP_META_FIELDS_v1 — inject lead-metadata as underscore-prefixed
+  // virtual keys so the field-mapping UI / engine can route them like any
+  // other form question. Underscore prefix distinguishes them from the
+  // actual user-submitted form questions.
+  if (j.ad_id)        payload._ad_id        = String(j.ad_id);
+  if (j.ad_name)      payload._ad_name      = String(j.ad_name);
+  if (j.adset_id)     payload._adset_id     = String(j.adset_id);
+  if (j.adset_name)   payload._adset_name   = String(j.adset_name);
+  if (j.campaign_id)  payload._campaign_id  = String(j.campaign_id);
+  if (j.campaign_name) payload._campaign_name = String(j.campaign_name);
+  if (j.form_id || formId) payload._form_id = String(j.form_id || formId || '');
+  if (pageId)         payload._page_id      = String(pageId);
+  if (ctx && ctx.page_name) payload._page_name = String(ctx.page_name);
+  // _form_name needs a separate Graph call (the leadgen response doesn't
+  // include it). Fetch it best-effort — cheap and cached most of the time
+  // by Meta's CDN. Skip silently on failure.
+  try {
+    const fid = j.form_id || formId;
+    if (fid) {
+      const fr = await fetch(`${GRAPH}/${fid}?fields=name&access_token=${pageToken}`);
+      const fj = await fr.json();
+      if (fj && fj.name) payload._form_name = String(fj.name);
+    }
+  } catch (_) {}
+
+  // FB_FORM_MAP_v2 — try per-form mapping first (source='facebook:<form_id>'),
+  // fall back to tenant-wide 'facebook' mapping if no per-form mapping exists.
+  // FB_MAP_DIAG_v1 — verbose logging on every step so admins can see why
+  // a mapping isn't applying.
+  let mappedExtras = {};
+  let mappedOverrides = {};
+  const _diag = { form_id: formId || null, page_id: pageId || null, payload_keys: Object.keys(payload) };
+  try {
+    const integrations = require('./integrations');
+    if (integrations && typeof integrations._saveLastPayload === 'function') {
+      try { await integrations._saveLastPayload('facebook:' + formId, payload); } catch (_) {}
+      try { await integrations._saveLastPayload('facebook', payload); } catch (_) {}
+    }
+    let customMap = null;
+    let mapSource = null;
+    if (integrations && typeof integrations._loadCustomMapping === 'function') {
+      // Per-form mapping first (most specific)
+      if (formId) {
+        customMap = await integrations._loadCustomMapping('facebook:' + formId);
+        if (customMap && Object.keys(customMap).length) mapSource = 'facebook:' + formId;
+      }
+      // Fallback to tenant-wide
+      if (!customMap || !Object.keys(customMap).length) {
+        customMap = await integrations._loadCustomMapping('facebook');
+        if (customMap && Object.keys(customMap).length) mapSource = 'facebook';
+      }
+    }
+    _diag.map_source = mapSource;
+    _diag.map_keys = customMap ? Object.keys(customMap) : [];
+    if (customMap && Object.keys(customMap).length) {
+      const out = integrations._applyCustomMapping({ data: payload }, customMap);
+      const first = (out && out[0]) || {};
+      if (first.custom_fields) mappedExtras = first.custom_fields;
+      ['name','phone','email','whatsapp','company','city','state','address','source','source_ref','notes','product','value','tags','utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid'].forEach(k => {
+        if (first[k] != null && first[k] !== '') mappedOverrides[k] = first[k];
+      });
+      _diag.applied_overrides = Object.keys(mappedOverrides);
+      _diag.applied_extras = Object.keys(mappedExtras);
+    } else {
+      _diag.applied_overrides = [];
+      _diag.applied_extras = [];
+      _diag.reason = 'no_mapping_found';
+    }
+  } catch (e) {
+    _diag.error = e.message;
+    console.warn('[fb-ingest] mapping skipped:', e.message);
+  }
+  // Persist diagnostic to webhook_log so admin can inspect via the
+  // Webhook Logs viewer in Settings → Integrations.
+  try {
+    await db.insert('webhook_log', {
+      source: 'meta',
+      payload: { kind: 'fb_map_diag', leadgen_id: leadgenId, form_id: formId, page_id: pageId, diag: _diag },
+      processed: 1, error: ''
+    });
+  } catch (_) {}
+  console.log('[fb-ingest] map diag:', JSON.stringify(_diag));
+
+  const lead = {
+    name:     mappedOverrides.name  || payload.full_name || payload.name || '',
+    phone:    mappedOverrides.phone || payload.phone_number || payload.phone || '',
+    email:    mappedOverrides.email || payload.email || '',
+    whatsapp: mappedOverrides.whatsapp || payload.phone_number || payload.phone || '',
+    source:   mappedOverrides.source || ctx.default_source || 'Facebook Lead Ad',
+    source_ref: mappedOverrides.source_ref || '',
+    company:  mappedOverrides.company || '',
+    city:     mappedOverrides.city || '',
+    state:    mappedOverrides.state || '',
+    address:  mappedOverrides.address || '',
+    notes:    mappedOverrides.notes || ('Imported from Meta Lead Ad' + (ctx.page_name ? ' — page: ' + ctx.page_name : '')),
+    tags:     mappedOverrides.tags || '',
+    value:    mappedOverrides.value != null ? Number(mappedOverrides.value) || null : null,
+    utm_source:   mappedOverrides.utm_source || '',
+    utm_medium:   mappedOverrides.utm_medium || '',
+    utm_campaign: mappedOverrides.utm_campaign || '',
+    utm_term:     mappedOverrides.utm_term || '',
+    utm_content:  mappedOverrides.utm_content || '',
+    gclid:        mappedOverrides.gclid || '',
+    meta_json: { leadgen_id: leadgenId, page_id: pageId, form_id: formId, raw: j },
+    created_at: db.nowIso(),
+    updated_at: db.nowIso()
+  };
+  if (ctx.default_user_id) lead.assigned_to = ctx.default_user_id;
+  if (ctx.default_status_id) lead.status_id = ctx.default_status_id;
+  // Custom-field values from the mapping land in extra_json (same shape
+  // as the leadsource webhook path produces).
+  if (Object.keys(mappedExtras).length) {
+    lead.extra_json = JSON.stringify(mappedExtras);
+  }
+
+  await _createLeadFromWebhook(lead);
+}
+
+// -------------------- WhatsApp verification ----------------------
+async function whatsappVerify(req, res) {
+  const mode     = req.query['hub.mode'];
+  const token    = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  const expected = process.env.WHATSAPP_VERIFY_TOKEN || '';
+  if (mode === 'subscribe' && token === expected) {
+    return res.status(200).send(challenge);
+  }
+  return res.status(403).send('Verification failed');
+}
+
+async function whatsappEvent(req, res) {
+  res.status(200).send('EVENT_RECEIVED');
+  try {
+    const body = req.body || {};
+    await db.insert('webhook_log', { source: 'whatsapp', payload: body, processed: 0 });
+    // Optional: persist new inbound message as a remark on matching lead
+    const entries = body.entry || [];
+    for (const entry of entries) {
+      for (const change of (entry.changes || [])) {
+        const msgs = change.value?.messages || [];
+        for (const m of msgs) {
+          const from = m.from;
+          const text = m.text?.body || '';
+          if (!from || !text) continue;
+          const lead = (await db.getAll('leads')).find(l => {
+            const p = String(l.phone || '').replace(/\D/g, '');
+            const w = String(l.whatsapp || '').replace(/\D/g, '');
+            const f = String(from).replace(/\D/g, '');
+            return p && (p === f || w === f);
+          });
+          if (lead) {
+            await db.insert('remarks', {
+              lead_id: lead.id, user_id: null,
+              remark: '[WhatsApp] ' + text, created_at: db.nowIso()
+            });
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[whatsapp] error:', e);
+  }
+}
+
+// -------------------- Website hook -------------------------------
+
+/**
+ * Read the inbound API key from any of the conventional places. Lots of
+ * connector tools (Pabbly, Zapier, Make, n8n, Facebook Lead Ads bridges) only
+ * expose certain auth styles in their UI, so we accept all of:
+ *   - `x-api-key: <key>`              (canonical)
+ *   - `Authorization: Bearer <key>`   (most common default in HTTP clients)
+ *   - `api_key` body field            (form-encoded webhooks)
+ *   - `?api_key=<key>` query param    (last-resort for tools that only let
+ *                                       you append URL params)
+ * The rest of the validation is unchanged — must equal WEBSITE_API_KEY.
+ */
+function _extractApiKey(req) {
+  const xkey = req.header('x-api-key');
+  if (xkey) return String(xkey).trim();
+  const auth = req.header('authorization') || '';
+  const bearer = /^bearer\s+(.+)$/i.exec(auth);
+  if (bearer) return String(bearer[1]).trim();
+  if (req.body && req.body.api_key) return String(req.body.api_key).trim();
+  if (req.query && req.query.api_key) return String(req.query.api_key).trim();
+  return '';
+}
+
+async function websiteHook(req, res) {
+  const key = _extractApiKey(req);
+  // Resolve from DB first, fall back to env. Admin UI saves to db.config
+  // (Admin → Website API → Regenerate). process.env only persists for
+  // the lifetime of the current process — on every Railway restart the
+  // env-only check would reject every webhook until an admin re-saved
+  // the key. Match the pattern integrations.js's leadSourceWebhook
+  // already uses.
+  const expected = (await db.getConfig('WEBSITE_API_KEY', '').catch(() => '')) ||
+                   process.env.WEBSITE_API_KEY || '';
+  if (!expected || key !== expected) {
+    return res.status(401).json({ error: 'Invalid API key' });
+  }
+  try {
+    const b = req.body || {};
+    // Tags — accept either a comma-separated string or a JSON array
+    let tags = '';
+    if (Array.isArray(b.tags)) tags = b.tags.join(',');
+    else if (b.tags) tags = String(b.tags);
+    else if (Array.isArray(b.labels)) tags = b.labels.join(',');
+    else if (b.labels) tags = String(b.labels);
+
+    // ---- Google Ads ValueTrack normalisation ----------------------
+    // Landing pages like:  ?campaign={campaignid}&network={network}&keyword={keyword}&gclid={gclid}
+    // map directly into our utm_* + source_ref + meta_json columns.
+    // Accept lots of aliases - different lead-source platforms (Pabbly, Make,
+    // Zapier, Meta Lead Ads, Google Ads) send the same fields under slightly
+    // different names. Anything unmatched gets silently dropped, which is
+    // exactly the bug we hit when Pabbly was mapping `campaign_name_new`.
+    const campaignId   = b.campaign_id || b.campaignid || b.campaignId
+                       || b.campaign_id_new || b.campaignIdNew
+                       || b.campaign || b.utm_campaign || '';
+    const campaignName = b.campaign_name || b.campaignname || b.campaignName
+                       || b.campaign_name_new || b.campaignNameNew
+                       || b.campaign_title || b.campaign_label || '';
+    const network      = b.network || b.utm_medium || '';   // search | content | youtube | display
+    const keyword      = b.keyword || b.utm_term || '';
+    const gclid        = b.gclid || b.clickid || b.click_id || '';
+    const adgroupid    = b.adgroupid || b.adgroup_id || '';
+    const matchtype    = b.matchtype || b.match_type || '';
+    const device       = b.device || '';
+    const placement    = b.placement || '';
+    const adposition   = b.adposition || b.ad_position || '';
+    const utmSource    = b.utm_source || (gclid ? 'google' : '');
+
+    // If we received Google Ads params, force source = "Google Ads" so it shows
+    // up cleanly in reports/segmentation. Manual b.source overrides.
+    // Source resolution priority:
+    //   1. explicit b.source (or aliases) wins
+    //   2. gclid/campaignId → 'Google Ads' (paid Google traffic)
+    //   3. utm_source / lead_source / origin / channel — if any inbound
+    //      attribution column has a value, use it (this is the path that
+    //      catches app-google-play, app-app-store, facebook, instagram,
+    //      organic, etc. — all the per-row sources webhooks send)
+    //   4. fallback to 'Website' (generic web form)
+    const _hookSrcAlias = b.source || b.lead_source || b.leadsource || b.origin
+                       || b.source_type || b.source_name || b.channel || b.referrer || '';
+    const source = String(_hookSrcAlias || '').trim()
+                   || (gclid || campaignId ? 'Google Ads' : '')
+                   || String(utmSource || '').trim()
+                   || 'Website';
+
+    // Build meta_json — keep every Google Ads param + UTM aliases + landing URL
+    const adsMeta = {};
+    if (campaignId)   adsMeta.campaign_id   = campaignId;
+    if (campaignName) adsMeta.campaign_name = campaignName;
+    if (network)      adsMeta.network       = network;
+    if (keyword)      adsMeta.keyword       = keyword;
+    if (gclid)        adsMeta.gclid         = gclid;
+    if (adgroupid)    adsMeta.adgroup_id    = adgroupid;
+    if (matchtype)    adsMeta.match_type    = matchtype;
+    if (device)       adsMeta.device        = device;
+    if (placement)    adsMeta.placement     = placement;
+    if (adposition)   adsMeta.ad_position   = adposition;
+    if (utmSource)    adsMeta.utm_source    = utmSource;
+    if (network)      adsMeta.utm_medium    = network;
+    if (campaignId)   adsMeta.utm_campaign  = campaignId;
+    if (keyword)      adsMeta.utm_term      = keyword;
+    if (b.utm_content)  adsMeta.utm_content  = b.utm_content;
+    if (b.landing_page) adsMeta.landing_page = b.landing_page;
+    if (b.referrer)     adsMeta.referrer     = b.referrer;
+
+    // Tag the lead with the campaign name (or ID) so it's filterable
+    if (campaignName && !tags.includes(campaignName)) {
+      tags = tags ? tags + ',' + campaignName : campaignName;
+    }
+    if (network && !tags.toLowerCase().includes(network.toLowerCase())) {
+      tags = tags ? tags + ',' + network : network;
+    }
+
+    // ---- Custom fields: pull any registered custom-field value out of
+    // the inbound body and put it into extra_json. Lead form custom
+    // fields live in the `custom_fields` table keyed by `key`. The
+    // webhook accepts the value under three names:
+    //   1. `<key>`            (e.g. campaign_name_new)
+    //   2. `cf_<key>`         (alternative form, used by some integrations)
+    //   3. `extra.<key>`      (nested form, rare)
+    // Without this loop, custom-field values from Pabbly/Make/Zapier
+    // were silently dropped.
+    let extraJson = {};
+    try {
+      const customFields = (await db.getAll('custom_fields'))
+        .filter(f => Number(f.is_active) !== 0);
+      for (const f of customFields) {
+        const k = String(f.key || '').trim();
+        if (!k) continue;
+        let v = b[k];
+        if (v === undefined || v === null || v === '') v = b['cf_' + k];
+        if ((v === undefined || v === null || v === '') && b.extra && typeof b.extra === 'object') {
+          v = b.extra[k];
+        }
+        if (v !== undefined && v !== null && v !== '') {
+          extraJson[k] = (typeof v === 'object') ? v : String(v);
+        }
+      }
+    } catch (e) {
+      console.warn('[website] custom-field merge failed:', e.message);
+    }
+
+    const lead = {
+      name:      b.name || '',
+      phone:     b.phone || b.mobile || '',
+      whatsapp:  b.whatsapp || b.phone || '',
+      email:     b.email || '',
+      source,
+      source_ref: b.source_ref || campaignName || campaignId || '',
+      product:   b.product || '',
+      notes:     b.notes || b.message || '',
+      city:      b.city || '',
+      state:     b.state || '',
+      country:   b.country || '',
+      company:   b.company || '',
+      address:   b.address || '',
+      pincode:   b.pincode || b.zip || '',
+      tags,
+      value:     (b.value != null && b.value !== '' && !isNaN(Number(b.value))) ? Number(b.value) : null,
+      currency:  b.currency || '',
+      next_followup_at: b.next_followup_at || null,
+      // First-class attribution columns (also kept in meta_json above for
+      // backwards-compat with any reports already querying the JSON blob).
+      gclid:          gclid || '',
+      gad_campaignid: b.gad_campaignid || campaignId || '',
+      utm_source:     utmSource || '',
+      utm_medium:     network || '',
+      utm_campaign:   campaignId || b.utm_campaign || '',
+      utm_term:       keyword || '',
+      utm_content:    b.utm_content || '',
+      meta_json: Object.keys(adsMeta).length ? Object.assign({}, b.meta || {}, adsMeta) : (b.meta || null),
+      extra_json: Object.keys(extraJson).length ? extraJson : null,
+      created_at: db.nowIso(),
+      updated_at: db.nowIso()
+    };
+    const result = await _createLeadFromWebhook(lead);
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    console.error('[website] error:', e);
+    res.status(400).json({ error: e.message });
+  }
+}
+
+async function otherHook(req, res) {
+  const key = _extractApiKey(req);
+  // Resolve from DB first, fall back to env. Admin UI saves to db.config
+  // (Admin → Website API → Regenerate). process.env only persists for
+  // the lifetime of the current process — on every Railway restart the
+  // env-only check would reject every webhook until an admin re-saved
+  // the key. Match the pattern integrations.js's leadSourceWebhook
+  // already uses.
+  const expected = (await db.getConfig('WEBSITE_API_KEY', '').catch(() => '')) ||
+                   process.env.WEBSITE_API_KEY || '';
+  if (!expected || key !== expected) {
+    return res.status(401).json({ error: 'Invalid API key' });
+  }
+  try {
+    const b = req.body || {};
+    const lead = {
+      name: b.name || '',
+      phone: b.phone || '',
+      email: b.email || '',
+      source: b.source || 'Other',
+      notes: b.notes || '',
+      meta_json: b,
+      created_at: db.nowIso(),
+      updated_at: db.nowIso()
+    };
+    const r = await _createLeadFromWebhook(lead);
+    res.json({ ok: true, ...r });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+}
+
+// -------------------- Shared lead creator ------------------------
+// Applies simple round-robin if assignment_rules don't match.
+async function _createLeadFromWebhook(lead) {
+  // 0. Phone validation. ACCEPT_NO_PHONE_v1 - only reject leads if BOTH
+  //    phone AND email are missing AND there's no usable name. Meta Lead
+  //    Ads test leads have literal "<test lead: dummy data..." strings
+  //    for the phone, which used to be silently dropped here. Now they
+  //    get flagged Junk so the user can see the test landed.
+  const _phDigits = String(lead.phone || '').replace(/\D/g, '');
+  const _hasEmail = !!String(lead.email || '').trim();
+  const _hasName  = !!String(lead.name || '').trim();
+  if (!_phDigits && !_hasEmail && !_hasName) {
+    return { ok: false, error: 'empty lead - no phone, email, or name' };
+  }
+  // Short or missing phone -> flag Junk so dialer/automation doesn't try it.
+  const isJunkPhone = !_phDigits || _phDigits.length < 10;
+
+  // 1. Find default status — 'Junk' if the phone is too short, else 'New'
+  const statuses = await db.getAll('statuses');
+  if (isJunkPhone) {
+    let junk = statuses.find(s => /^(junk|junk\s+lead|spam)$/i.test(String(s.name || '')));
+    if (!junk) {
+      // Auto-create 'Junk' status if it doesn't exist
+      const id = await db.insert('statuses', { name: 'Junk', color: '#64748b', sort_order: 990, is_final: 1 });
+      junk = { id, name: 'Junk' };
+    }
+    lead.status_id = junk.id;
+    lead.notes = '⚠ Auto-flagged Junk: phone "' + (lead.phone || '') + '" has only ' + _phDigits.length + ' digits.\n' + (lead.notes || '');
+  } else {
+    const newStatus = statuses.find(s => s.name === 'New');
+    if (newStatus) lead.status_id = newStatus.id;
+  }
+
+  // 2. Apply assignment rules via shared matcher (handles cf_<key> fields)
+  try {
+    const { pickAssigneeFromRules } = require('../utils/assignmentRules');
+    const ruleAssignee = await pickAssigneeFromRules(lead);
+    if (ruleAssignee) lead.assigned_to = ruleAssignee;
+  } catch (e) { console.warn('[webhook] rule eval skipped:', e.message); }
+
+  // 3. Duplicate check (within window). Always runs — we mark every dupe so
+  // the "⚠️ Duplicates only" filter and the bulk-Dedupe button can see them.
+  const policy = process.env.DUPLICATE_POLICY || 'allow';
+  const hours = Number(process.env.DUPLICATE_WINDOW_HOURS) || 24;
+  const since = new Date(Date.now() - hours * 3600 * 1000).toISOString();
+  const phoneDigits = String(lead.phone || '').replace(/\D/g, '');
+  const emailLower  = String(lead.email || '').toLowerCase();
+  const dup = (phoneDigits || emailLower)
+    ? (await db.getAll('leads')).find(l => {
+        if (String(l.created_at) < since) return false;
+        const lp = String(l.phone || '').replace(/\D/g, '');
+        const le = String(l.email || '').toLowerCase();
+        return (phoneDigits && lp === phoneDigits) ||
+               (emailLower && le === emailLower);
+      })
+    : null;
+
+  if (dup) {
+    // Always flag — visible to the dedupe filter even under the default 'allow' policy
+    lead.is_duplicate = 1;
+    lead.duplicate_of = dup.id;
+    if (policy === 'reject') {
+      return { duplicate: true, matched_id: dup.id, skipped: true };
+    }
+    if (policy === 'assign_same_user' && dup.assigned_to) {
+      lead.assigned_to = dup.assigned_to;
+    }
+    if (policy === 'skip_assignment') lead.assigned_to = null;
+    lead.notes = (lead.notes || '') + '\n[DUPLICATE of lead #' + dup.id + ']';
+  }
+  // Also flag is_duplicate=1 if the row's tag explicitly says "Duplicate"
+  if (!lead.is_duplicate && /\b(duplicate|dup)\b/i.test(String(lead.tags || ''))) {
+    lead.is_duplicate = 1;
+  }
+
+  const id = await db.insert('leads', lead);
+
+  if (lead.assigned_to) {
+    await db.insert('notifications', {
+      user_id: lead.assigned_to,
+      type: 'lead_assigned',
+      title: 'New lead: ' + (lead.name || lead.phone || ''),
+      body:  'Source: ' + (lead.source || ''),
+      link:  '#/leads/' + id,
+      is_read: 0,
+      created_at: db.nowIso()
+    });
+  }
+  // Fire automations for inbound leads
+  try { require('../utils/automations').fire('lead_created', { lead: Object.assign({ id }, lead) }); } catch (_) {}
+  // OUTBOUND_WH_FB_FIRE_v1 — fire outbound webhooks for FB Lead Ads / Meta
+  // Lead Ads / generic /hook/leadsource ingest. Previously only /hook/website
+  // and manual creates called fireOutboundWebhooks, so FB leads with custom
+  // field conditions (e.g. cf_page_name=New Shop) never triggered the webhook.
+  try {
+    const { fireOutboundWebhooks } = require('./outboundWebhook');
+    setImmediate(() => fireOutboundWebhooks(Object.assign({ id }, lead))
+      .catch(e => console.error('[outboundWebhook] leadsource fire failed:', e.message)));
+  } catch (_) {}
+  return { id, assigned_to: lead.assigned_to || null };
+}
+
+// -------------------- Calendly inbound webhook --------------------
+/**
+ * POST /hook/calendly/:token
+ *
+ * Calendly POSTs here when an invitee creates or cancels a meeting.
+ * The :token in the URL identifies the rep — each user has a unique
+ * users.calendly_webhook_token they paste into Calendly's webhook
+ * config (Integrations → Webhooks → Add).
+ *
+ * On invitee.created: find a matching lead by email/phone (preferring
+ * one assigned to this rep), then create a follow-up at the booked
+ * start_time and add a remark "📅 Meeting confirmed for ...".
+ * If no lead matches, auto-create one with source=Calendly so the
+ * booking isn't lost.
+ *
+ * On invitee.canceled: mark the most recent open follow-up done and
+ * log a cancellation remark.
+ *
+ * Always returns 200 unless the URL token is missing/wrong, so
+ * Calendly doesn't keep retrying on benign data issues. Errors are
+ * logged for admin triage.
+ */
+async function calendlyEvent(req, res) {
+  try {
+    const token = String(req.params.token || '').trim();
+    if (!token) return res.status(400).json({ error: 'missing token' });
+    const all = await db.getAll('users');
+    const rep = all.find(u => String(u.calendly_webhook_token || '') === token);
+    if (!rep) return res.status(404).json({ error: 'unknown token' });
+
+    const ev = req.body || {};
+    const kind = ev.event || (ev.payload && ev.payload.event) || '';
+    const p = ev.payload || ev;
+
+    // Calendly's body shape varies a bit by plan / API version. Be defensive.
+    const inviteeEmail = String(p.email || (p.invitee && p.invitee.email) || '').trim().toLowerCase();
+    const inviteeName  = String(p.name  || (p.invitee && p.invitee.name)  || '').trim();
+    const qa = Array.isArray(p.questions_and_answers)
+      ? p.questions_and_answers
+      : (p.invitee && Array.isArray(p.invitee.questions_and_answers) ? p.invitee.questions_and_answers : []);
+    const phoneAnswer = qa.find(q => /phone|mobile|whatsapp|number/i.test(q.question || '')) || null;
+    const inviteePhoneRaw = String((phoneAnswer && phoneAnswer.answer) || p.text_reminder_number || '').trim();
+    const inviteePhone = inviteePhoneRaw.replace(/\D/g, '');
+
+    const sched = p.scheduled_event || p.event || {};
+    const startTime = sched.start_time || p.start_time || p.start || null;
+    const eventName = sched.name || sched.event_type || 'Calendly meeting';
+
+    const leads = await db.getAll('leads');
+    const norm = (s) => String(s || '').replace(/\D/g, '');
+    let lead = null;
+    if (inviteeEmail) {
+      lead = leads.find(l => String(l.email || '').toLowerCase() === inviteeEmail && Number(l.assigned_to) === Number(rep.id))
+          || leads.find(l => String(l.email || '').toLowerCase() === inviteeEmail);
+    }
+    if (!lead && inviteePhone) {
+      lead = leads.find(l => norm(l.phone) === inviteePhone && Number(l.assigned_to) === Number(rep.id))
+          || leads.find(l => norm(l.phone).slice(-10) === inviteePhone.slice(-10) && norm(l.phone).length >= 10);
+    }
+
+    if (kind === 'invitee.created' || kind === 'invitee_created') {
+      if (!lead) {
+        const _newStatusId = await (async () => {
+          const s = await db.findOneBy('statuses', 'name', 'New');
+          return s ? s.id : null;
+        })();
+        const newLeadId = await db.insert('leads', {
+          name: inviteeName || inviteeEmail || 'Calendly booking',
+          phone: inviteePhone || '',
+          email: inviteeEmail || '',
+          source: 'Calendly',
+          source_ref: 'webhook',
+          status_id: _newStatusId,
+          assigned_to: rep.id,
+          notes: 'Auto-created from Calendly booking · ' + eventName,
+          created_by: rep.id,
+          created_at: db.nowIso(),
+          updated_at: db.nowIso(),
+          last_status_change_at: db.nowIso(),
+          next_followup_at: startTime || null
+        });
+        lead = await db.findOneBy('leads', 'id', newLeadId);
+      } else if (startTime) {
+        await db.update('leads', lead.id, {
+          next_followup_at: startTime,
+          updated_at: db.nowIso()
+        });
+      }
+      if (startTime && lead) {
+        await db.insert('followups', {
+          lead_id: lead.id, user_id: rep.id, due_at: startTime,
+          note: '📅 Calendly: ' + eventName + (inviteeName ? ' with ' + inviteeName : ''),
+          is_done: 0, created_at: db.nowIso()
+        });
+        await db.insert('remarks', {
+          lead_id: lead.id, user_id: rep.id,
+          remark: '📅 Meeting confirmed for ' + new Date(startTime).toLocaleString('en-IN') +
+                  ' · ' + eventName + ' · via Calendly',
+          status_id: ''
+        });
+      }
+      return res.json({ ok: true, lead_id: lead ? lead.id : null });
+    }
+
+    if (kind === 'invitee.canceled' || kind === 'invitee_canceled') {
+      if (!lead) return res.json({ ok: true, ignored: 'no matching lead' });
+      const fus = (await db.getAll('followups'))
+        .filter(f => Number(f.lead_id) === Number(lead.id) && Number(f.is_done) === 0)
+        .sort((a, b) => String(b.due_at).localeCompare(String(a.due_at)));
+      if (fus.length) {
+        await db.update('followups', fus[0].id, { is_done: 1, done_at: db.nowIso() });
+      }
+      await db.insert('remarks', {
+        lead_id: lead.id, user_id: rep.id,
+        remark: '❌ Calendly meeting canceled' +
+                (startTime ? ' (was scheduled for ' + new Date(startTime).toLocaleString('en-IN') + ')' : '') +
+                (p.cancellation && p.cancellation.reason ? ' · reason: ' + p.cancellation.reason : ''),
+        status_id: ''
+      });
+      return res.json({ ok: true, lead_id: lead.id, action: 'canceled' });
+    }
+
+    return res.json({ ok: true, ignored: 'unhandled event ' + kind });
+  } catch (e) {
+    console.error('[calendly] webhook error:', e.message);
+    return res.json({ ok: false, error: String(e.message || e) });
+  }
+}
+
+module.exports = {
+  metaVerify, metaEvent,
+  whatsappVerify, whatsappEvent,
+  websiteHook, otherHook,
+  calendlyEvent
+};

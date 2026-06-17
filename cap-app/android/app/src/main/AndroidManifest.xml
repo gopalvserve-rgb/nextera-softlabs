@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   ============================================================
+   🔒 LOCKED FILE — Recording & Call Sync Pipeline
+   ============================================================
+   This manifest declares the permissions and components that
+   the call/recording sync pipeline depends on. Changing or
+   removing any permission below (READ_PHONE_STATE, READ_CALL_LOG,
+   READ_CONTACTS, READ_MEDIA_AUDIO, MANAGE_EXTERNAL_STORAGE,
+   RECORD_AUDIO, FOREGROUND_SERVICE, RECEIVE_BOOT_COMPLETED,
+   POST_NOTIFICATIONS, ACCESS_*_LOCATION) — or the PhoneStateReceiver
+   or worker registrations — can stop recordings reaching the CRM.
+
+   BEFORE editing — read docs/LOCKED_FILES.md and
+   RECORDING_ARCHITECTURE_AND_LOCKDOWN.md (workspace root),
+   then ASK THE USER explicitly before making any change.
+   ============================================================
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+
+            <!-- Receive notification taps when FCM payload sets
+                 clickAction: 'FCM_PLUGIN_ACTIVITY'. Without this filter,
+                 tapping such a notification does nothing because
+                 PackageManager can't resolve the activity. -->
+            <intent-filter>
+                <action android:name="FCM_PLUGIN_ACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".PhoneStateReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.READ_PHONE_STATE">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
+        <!-- PERM_ONBOARDING_v1: Runo-style permission onboarding (additive). -->
+        <!-- INCOMING_CARD_v1: transparent over-lockscreen Activity that hosts the call card. -->
+        <activity
+            android:name=".IncomingCallActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <!-- OUTGOING_CARD_v1: sibling Activity for outgoing calls. Same translucent
+             theme + flags so the card overlays the OEM dialer with the customer's
+             name, status, and last remark. Has its own â close button. -->
+        <activity
+            android:name=".OutgoingCallActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name=".PermissionOnboardingActivity"
+            android:exported="false"
+            android:label="App Permissions"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <!-- FG_SVC_v1: Always-on foreground service. dataSync type means
+             "keep the app alive so it can sync data" — Android 14 requires
+             this declaration + the matching FOREGROUND_SERVICE_DATA_SYNC
+             permission below. -->
+        <service
+            android:name=".CallTrackingForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- FG_SVC_v2: BootReceiver re-starts the foreground service when the
+             phone boots. Without this, after a phone restart the service is
+             dead until the user opens the CRM, breaking call/recording sync
+             silently. -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Geolocation for attendance check-in/out -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="28" />
+    <!-- Read OEM call-recording files (Samsung Recordings/Call, Xiaomi MIUI/sound_recorder/call_rec, etc.).
+         On Android 11+ READ_EXTERNAL_STORAGE alone CANNOT see those folders — they live in scoped storage.
+         We need MANAGE_EXTERNAL_STORAGE ("All files access"). The plugin opens the settings screen
+         on demand; the user must explicitly grant it. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+                     tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- FG_SVC_v1: Android 14 requires the matching type permission for the FG service. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- PERM_ONBOARDING_v1 (2026-05-25): keep WorkManager / FCM alive across Doze. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- PERM_ONBOARDING_v1: caller-ID popup needs to draw above other apps. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- APK_AUTO_UPDATE_DIRECT_v1 (2026-06-03): in-app APK download+install. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- PERM_ONBOARDING_v1: sync follow-ups to phone calendar. -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+
+    <queries>
+        <!-- Phone dialer (DIAL = pre-fill number, VIEW = open dialer) -->
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="tel" />
+        </intent>
+        <!-- WhatsApp deep link -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="whatsapp" />
+        </intent>
+        <!-- WA_APP_TARGET_v1: explicit package visibility so the native
+             LeadCRMNative.openWhatsApp bridge can setPackage() to force
+             the Personal vs Business app on Android 11+ (package-visibility
+             filtering otherwise hides these and startActivity throws). -->
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <!-- Email (mailto) -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+    </queries>
+
+</manifest>

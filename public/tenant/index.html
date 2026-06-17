@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6366f1" />
+  <title>Lead CRM</title>
+  <!-- Asset URLs are RELATIVE so they resolve to /t/<slug>/<asset>
+       when the page is served at /t/<slug>/. attachTenant strips the
+       prefix and the express.static handler in server.js serves
+       the file from public/tenant/. The trailing slash is enforced
+       by a redirect in server.js so these always resolve correctly. -->
+  <link rel="stylesheet" href="styles.css?v=2026-06-16-tour-fab-left" />
+  <!-- GLASS_THEME_v1 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" />
+  <link rel="stylesheet" href="styles.glass.css?v=2026-06-06-glass-v1.5" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2224%22 font-size=%2226%22>🎯</text></svg>" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <!-- SC_IOS_PWA_v1 — iOS Add-to-Home-Screen support. apple-mobile-web-app-capable
+       tells iOS Safari to treat us as a standalone app when launched from the
+       home screen. title is the label that appears under the home-screen icon.
+       mobile-web-app-capable is the W3C-spec counterpart for compatibility. -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="SmartCRM" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <script>
+    // ---- SW_KILL_INLINE_v1 (2026-05-23) ------------------------------
+    // Belt-and-suspenders cleanup. A previous version of the tenant SPA
+    // registered a service worker, and devices that opened the app
+    // before SW registration was removed still have that stale SW alive
+    // serving cached app.js — blocking every update we ship. The
+    // sw.js file is now a kill-switch, but if the old SW caches its own
+    // /sw.js fetch we'd deadlock waiting for it to self-update.
+    //
+    // This inline block runs at parse-time and:
+    //   1. Lists every SW registration in the current scope.
+    //   2. Unregisters each one (await all).
+    //   3. Clears every Cache Storage entry.
+    //   4. If anything was actually removed, reloads ONCE with a
+    //      one-shot URL flag so we don't loop.
+    //
+    // Safe to leave in forever: on a clean device with no SW + no
+    // caches, the calls return empty and we just continue rendering.
+    (function () {
+      try {
+        if (!('serviceWorker' in navigator)) return;
+        // SW_KILL_INLINE_v2 — no sticky flag. The cleanup is a no-op when
+        // there's nothing to clean (registrations + caches both empty),
+        // so it's safe to run on every load. Removing the flag prevents
+        // users from getting permanently stuck on the first cached
+        // version after the inline kill-switch initially ran.
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          if (!regs || !regs.length) {
+            // No registrations — also flush Cache Storage just in case
+            // a stale Cache entry survived an earlier unregister.
+            if (window.caches && caches.keys) {
+              caches.keys().then(function (keys) {
+                if (!keys.length) return;
+                Promise.all(keys.map(function (k) { return caches.delete(k); })).then(function () {
+                  // Reload only if we actually deleted something.
+                  window.location.reload();
+                });
+              });
+            }
+            return;
+          }
+          Promise.all(regs.map(function (r) {
+            try { return r.unregister(); } catch (_) { return Promise.resolve(false); }
+          })).then(function () {
+            // After unregistering, nuke caches too.
+            var done = function () {
+              window.location.reload();
+            };
+            if (window.caches && caches.keys) {
+              caches.keys().then(function (keys) {
+                Promise.all(keys.map(function (k) { return caches.delete(k); })).then(done, done);
+              }, done);
+            } else {
+              done();
+            }
+          });
+        }).catch(function () { /* silent */ });
+      } catch (_) { /* silent */ }
+    })();
+  </script>
+  <script>
+    // ---- Tenant-aware fetch shim --------------------------------------
+    // The original Celeste SPA POSTs to absolute /api etc. In the SaaS
+    // deployment every tenant lives under /t/<slug>/, so we rewrite all
+    // outbound /api and /hook URLs to the tenant-scoped equivalents.
+    // Done as a fetch monkey-patch so we don't have to chase down every
+    // hardcoded path inside the 13k-line app.js.
+    (function () {
+      var m = location.pathname.match(/^\/t\/([a-z0-9-]+)/i);
+      if (!m) return;            // running outside a tenant (e.g. dev)
+      var prefix = '/t/' + m[1];
+      window.TENANT_SLUG = m[1];
+      window.API_URL  = prefix + '/api';
+      window.HOOK_URL = prefix + '/hook';
+      var origFetch = window.fetch;
+      window.fetch = function (url, init) {
+        if (typeof url === 'string') {
+          if (url === '/api' || url === '/api/' || url.indexOf('/api/') === 0) url = prefix + url;
+          else if (url.indexOf('/hook/') === 0) url = prefix + url;
+          else if (url === '/config.json') url = prefix + url;
+        }
+        return origFetch.call(this, url, init);
+      };
+    })();
+
+    // ---- SSO auto-login + bootstrap loader --------------------------
+    // When /admin → "Login as tenant" is clicked the new window opens
+    //   /t/<slug>/?ssl=<jwt>
+    // This block:
+    //   1. Exchanges the ssl token for a regular tenant JWT (api_auth_ssoLogin)
+    //   2. Strips ?ssl= from the URL bar so it isn't kept in history
+    //   3. THEN loads app.js so the boot code reads the freshly-written
+    //      token from localStorage. (Static <script src="/app.js?v=2026-06-17-rrobin-v1" defer>
+    //      would race against the async exchange and the user would land
+    //      on the login screen instead of being signed in.)
+    (async function bootstrap() {
+      try {
+        var p = new URLSearchParams(location.search);
+        var ssl = p.get('ssl');
+        if (ssl && window.TENANT_SLUG) {
+          try {
+            var r = await fetch('/api', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fn: 'api_auth_ssoLogin',
+                args: ['', { ssl: ssl, slug: window.TENANT_SLUG }]
+              })
+            });
+            var j = await r.json();
+            if (!r.ok || j.error) throw new Error(j.error || 'sso failed');
+            var u = j.result || {};
+            try { localStorage.setItem('crm_token', u.token); } catch (_) {}
+            try { localStorage.setItem('crm_user', JSON.stringify(u.user)); } catch (_) {}
+          } catch (e) { console.warn('[sso] login failed:', e && e.message); }
+          try {
+            var url = new URL(location.href);
+            url.searchParams.delete('ssl');
+            history.replaceState(null, '', url.pathname + url.search + url.hash);
+          } catch (_) {}
+        }
+      } finally {
+        // Now load the SPA. Static <script defer> was removed below
+        // so this is the ONLY path that boots the app. Relative URLs
+        // so they resolve to /t/<slug>/app.js when the page is
+        // /t/<slug>/.
+        //
+        // CAREFUL: this <script> is in <head>, so when the no-ssl
+        // path runs synchronously document.body doesn't exist yet
+        // and appendChild throws "Cannot read properties of null".
+        // Wait for DOMContentLoaded before injecting scripts.
+        function injectSpaScripts() {
+          var s = document.createElement('script');
+          s.src = 'app.js?v=2026-06-17-rrobin-v1';
+          // STU360_LIVE_v1 — Student 360 view (Education pack only)
+          var st = document.createElement('script');
+          st.src = 'student360.js?v=2026-06-13-ls-v1-p113cb';
+          st.defer = true;
+          document.body.appendChild(st);
+          // COPILOT_v4 Proactive Coach (vserve beta)
+          var cp = document.createElement('script');
+          cp.src = 'copilotProactive.js?v=2026-06-17-daysum-v5';
+          cp.async = true;
+          document.body.appendChild(cp);
+          document.body.appendChild(s);
+          // OPPORTUNITIES_v1 P2 — Lead modal Opportunities tab
+          var oppJs = document.createElement('script');
+          oppJs.src = 'opportunities.js?v=2026-06-13-ls-v1-p113cb';
+          oppJs.defer = true;
+          document.body.appendChild(oppJs);
+          // LEAD_SCORING_v1 P1 — Smart Lead Scoring
+          var lsJs = document.createElement('script');
+          lsJs.src = 'leadScoring.js?v=2026-06-15-cp4-v1';
+          lsJs.defer = true;
+          document.body.appendChild(lsJs);
+          var c = document.createElement('script');
+          c.src = 'caller-id-native.js?v=2026-05-24-tokenkey';
+          document.body.appendChild(c);
+        }
+        if (document.body) injectSpaScripts();
+        else document.addEventListener('DOMContentLoaded', injectSpaScripts, { once: true });
+      }
+    })();
+
+    // Service worker registration is intentionally disabled on tenant
+    // pages for now — SW scope handling under /t/<slug>/ needs a
+    // separate per-tenant manifest + scope, which we'll wire up in a
+    // follow-up. The CRM works fine without offline; only push +
+    // offline shell are deferred.
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- SC_IOS_PWA_v1 — install hint banner. Only shows on iOS Safari when
+       not already running in standalone mode and not dismissed before. -->
+  <style>
+    @keyframes ios-arrow-bounce { 0%,100%{transform:translateY(0);opacity:.6} 50%{transform:translateY(6px);opacity:1} }
+    @keyframes ios-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:.85} }
+    #ios-install-hint { animation: ios-pulse 2.4s ease-in-out infinite }
+    #ios-install-arrow { animation: ios-arrow-bounce 1.4s ease-in-out infinite }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    #ios-howto-overlay { animation: fadeIn .25s ease-out }
+
+    /* LEADCARD_UI_RESTORE_v1 — 2026-06-08 — DASH_MOBILE_CSS_v1 was reverted.
+       Its broad selectors (#view .card svg / #view div[style*="grid-template-columns"]
+       / #view div[style*="minmax(...)"]) collapsed the mobile lead-card action
+       buttons + status pills because they matched ANY descendant of #view.
+       Dashboard widget mobile fit is handled in JS (DASH_MOBILE_FIX_v1/v2);
+       if mobile widgets overflow again, fix at the widget level, not via a
+       wildcard sweep. */
+  </style>
+  <div id="ios-install-hint" style="display:none;position:fixed;bottom:4.5rem;left:1rem;right:1rem;z-index:99999;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:1rem;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.4);font:14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;border:1px solid rgba(99,102,241,.4)">
+    <button id="ios-install-close" aria-label="Dismiss" style="position:absolute;top:.4rem;right:.4rem;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:1.1rem;width:28px;height:28px;border-radius:50%;cursor:pointer;line-height:1">×</button>
+    <div style="display:flex;align-items:flex-start;gap:.7rem;padding-right:1.5rem">
+      <div style="font-size:1.8rem;flex-shrink:0">📱</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.95rem;margin-bottom:.2rem">Install SmartCRM on your iPhone</div>
+        <div style="font-size:.78rem;opacity:.8;margin-bottom:.6rem">Works fullscreen like a real app — no App Store needed.</div>
+        <button id="ios-install-howto" style="background:#6366f1;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;width:100%">Show me how →</button>
+      </div>
+    </div>
+    <div id="ios-install-arrow" style="position:absolute;left:50%;bottom:-1.6rem;transform:translateX(-50%);color:#6366f1;font-size:1.6rem;pointer-events:none;text-shadow:0 2px 8px rgba(99,102,241,.5)">▼</div>
+  </div>
+  <div id="ios-howto-overlay" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.94);color:#fff;overflow-y:auto;font:14px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif">
+    <div style="max-width:480px;margin:0 auto;padding:2rem 1.5rem;min-height:100vh;box-sizing:border-box">
+      <button id="ios-howto-close" aria-label="Close" style="position:fixed;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.3rem;width:40px;height:40px;border-radius:50%;cursor:pointer;backdrop-filter:blur(8px)">×</button>
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <div style="font-size:3rem;margin-bottom:.5rem">📱</div>
+        <h2 style="margin:0 0 .3rem;font-size:1.4rem;font-weight:700">Install SmartCRM on iPhone</h2>
+        <p style="margin:0;opacity:.7;font-size:.85rem">3 quick steps. The install button is inside Safari, not on this page.</p>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.2rem;margin-bottom:1rem">
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <div style="background:#6366f1;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div>
+          <div style="flex:1">
+            <div style="font-weight:600;margin-bottom:.3rem">Find Safari's Share button</div>
+            <div style="opacity:.85;font-size:.85rem;margin-bottom:.7rem">At the BOTTOM of Safari you'll see a row of icons. The Share button is a small square with an up-arrow ↑ coming out of the top. If you don't see icons, scroll to the top of the page or tap the URL pill to expand the toolbar.</div>
+            <div style="display:flex;align-items:center;gap:.4rem;justify-content:center;padding:.6rem;background:rgba(0,0,0,.25);border-radius:8px;font-size:.75rem;opacity:.9">
+              <span style="opacity:.5">◁</span>
+              <span style="opacity:.5">▷</span>
+              <span style="background:#6366f1;color:#fff;padding:.25rem .5rem;border-radius:6px;font-weight:600">↑ this one</span>
+              <span style="opacity:.5">📑</span>
+              <span style="opacity:.5">⊞</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.2rem;margin-bottom:1rem">
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <div style="background:#6366f1;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div>
+          <div style="flex:1">
+            <div style="font-weight:600;margin-bottom:.3rem">Tap "Add to Home Screen"</div>
+            <div style="opacity:.85;font-size:.85rem;margin-bottom:.7rem">A big sheet slides up. Scroll DOWN until you see "Add to Home Screen".</div>
+            <div style="padding:.6rem;background:rgba(0,0,0,.25);border-radius:8px;font-size:.78rem">
+              <div style="opacity:.5;margin-bottom:.25rem">Copy</div>
+              <div style="opacity:.5;margin-bottom:.25rem">Find on Page</div>
+              <div style="opacity:.5;margin-bottom:.25rem">Add to Reading List</div>
+              <div style="background:#6366f1;color:#fff;padding:.3rem .5rem;border-radius:6px;font-weight:600;display:inline-block">➕ Add to Home Screen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.2rem;margin-bottom:1.5rem">
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <div style="background:#6366f1;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div>
+          <div style="flex:1">
+            <div style="font-weight:600;margin-bottom:.3rem">Tap Add → find the icon</div>
+            <div style="opacity:.85;font-size:.85rem;margin-bottom:.7rem">Confirmation shows the app name. Tap <b>Add</b> top-right. The icon appears on the <b>last page</b> of your home screen (swipe right to find it).</div>
+            <div style="display:flex;align-items:center;gap:.5rem;padding:.6rem;background:rgba(0,0,0,.25);border-radius:8px">
+              <div style="background:#6366f1;color:#fff;width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem">🎯</div>
+              <div style="font-size:.85rem">
+                <div style="font-weight:600">SmartCRM</div>
+                <div style="opacity:.7;font-size:.75rem">On your home screen, fullscreen</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;padding-bottom:2rem">
+        <button id="ios-howto-dismiss" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:.6rem 1.5rem;font-size:.9rem;cursor:pointer">Got it — close this guide</button>
+        <div style="opacity:.5;font-size:.75rem;margin-top:1rem">Apple doesn't let websites install apps — only Safari can. That's why you tap the Share button manually.</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      try {
+        var ua = navigator.userAgent || '';
+        var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+        // iPadOS 13+ pretends to be a Mac. Tighten the detection so real Macs
+        // with Touch Bar / multi-touch trackpads don't get the banner.
+        if (!isIOS && /Macintosh/.test(ua) && navigator.maxTouchPoints > 2) {
+          var mm = window.matchMedia;
+          var coarse  = mm && mm('(pointer: coarse)').matches;
+          var noHover = mm && mm('(hover: none)').matches;
+          if (coarse && noHover) isIOS = true;
+        }
+        var isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+        if (!isStandalone && navigator.standalone === true) isStandalone = true;
+        var dismissed = false;
+        try { dismissed = localStorage.getItem('ios_install_dismissed') === '1'; } catch(_) {}
+        function persistDismiss() { try { localStorage.setItem('ios_install_dismissed', '1'); } catch(_) {} }
+        if (isIOS && !isStandalone && !dismissed) {
+          var hint = document.getElementById('ios-install-hint');
+          var overlay = document.getElementById('ios-howto-overlay');
+          if (!hint || !overlay) return;
+          setTimeout(function(){ hint.style.display = 'block'; }, 2000);
+          var howtoBtn = document.getElementById('ios-install-howto');
+          var closeBtn = document.getElementById('ios-install-close');
+          var overlayCloseBtn = document.getElementById('ios-howto-close');
+          var overlayDismissBtn = document.getElementById('ios-howto-dismiss');
+          if (howtoBtn) howtoBtn.onclick = function(){ overlay.style.display = 'block'; };
+          if (closeBtn) closeBtn.onclick = function(){ hint.style.display = 'none'; persistDismiss(); };
+          if (overlayCloseBtn) overlayCloseBtn.onclick = function(){ overlay.style.display = 'none'; };
+          if (overlayDismissBtn) overlayDismissBtn.onclick = function(){
+            overlay.style.display = 'none';
+            hint.style.display = 'none';
+            persistDismiss();
+          };
+        }
+      } catch(_) {}
+    })();
+  </script>
+
+  <!-- Login screen -->
+  <template id="tpl-login">
+    <div class="login-screen">
+      <div class="login-card">
+        <div class="login-brand">
+          <img class="login-logo" data-bind="logo_url" alt="" />
+          <h1 data-bind="company_name">Lead CRM</h1>
+        </div>
+        <form id="login-form">
+          <label>Email</label>
+          <input type="email" name="email" autocomplete="username" required />
+          <label>Password</label>
+          <input type="password" name="password" autocomplete="current-password" required />
+          <button type="submit" class="btn primary block">Sign in</button>
+          <p id="login-err" class="error"></p>
+        </form>
+      </div>
+    </div>
+  </template>
+
+  <!-- Shell: top bar + sidebar + content -->
+  <template id="tpl-shell">
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <img data-bind="logo_url" class="sidebar-logo" alt="" />
+          <span data-bind="company_name">Lead CRM</span>
+        </div>
+        <nav id="nav"></nav>
+        <div class="sidebar-footer">
+          <div class="me">
+            <span class="avatar" data-bind="initials"></span>
+            <div>
+              <div class="name" data-bind="user_name"></div>
+              <div class="role" data-bind="user_role"></div>
+            </div>
+          </div>
+          <button class="btn ghost block" id="btn-logout">Logout</button>
+        </div>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <h2 id="page-title">Dashboard</h2>
+          <div class="topbar-right">
+            <button class="btn ghost" id="btn-getapp" title="Install / Download the app">
+              <span>📱</span>
+              <span class="topbar-getapp-text">Get app</span>
+            </button>
+            <button class="btn ghost" id="btn-whatsapp" title="Open WhatsApp Web">
+              <span style="color:#25d366;font-size:1.05em">💬</span>
+              <span class="topbar-getapp-text" style="margin-left:.25rem">WhatsApp</span>
+            </button>
+            <button class="btn ghost" id="btn-notif">
+              <span>🔔</span><span class="badge" id="notif-count" hidden>0</span>
+            </button>
+          </div>
+        </header>
+        <section id="view"></section>
+      </main>
+    </div>
+  </template>
+
+  <!-- /app.js + /caller-id-native.js are loaded by the bootstrap()
+       block in <head> so they run AFTER the optional ?ssl=… magic-link
+       exchange writes a fresh token to localStorage. Static -->
+  <script src="js/deviceDiag.js?v=2026-05-24-args-fix" defer></script> <!-- DEVICE_DIAG_v1 -->
