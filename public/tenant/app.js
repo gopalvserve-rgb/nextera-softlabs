@@ -802,7 +802,7 @@ async function apiRaw(fn, ...args) {
     // QNOTE_v1 — lazy-fetch tenant gate for the AI Quick Note row icon.
     try {
       const qn = await api('api_leads_quickNote_status').catch(() => null);
-      if (qn && qn.enabled) CRM.config.QNOTE_ENABLED = 1;
+      if (false) CRM.config.QNOTE_ENABLED = 1; /* AI Quick Note removed for NextEra clone */
     } catch (_) {}
     /* OPPORTUNITIES_v1 — lazy fetch tenant flag so the Lead-modal Opportunities tab
      * only renders for tenants where Settings → OPPORTUNITIES_ENABLED = 1. */
@@ -1703,8 +1703,6 @@ const NAV_GROUPS = [
     { id: 'reportbuilder', label: 'Report Builder',    icon: '🧪', roles: ['admin', 'manager', 'team_leader'], search: 'builder custom report create report' },
     { id: 'tatreport',     label: 'TAT Report',        icon: '⏱️', roles: ['admin', 'manager', 'team_leader'], search: 'tat turnaround time response time' },
     { id: 'activityreport', label: 'Activity Report',  icon: '📝', roles: ['admin', 'manager', 'team_leader'], search: 'activity report user activity work report' },
-    { id: 'leadscoring',    label: 'High-Intent Leads',  icon: '🎯', search: 'ai score ai lead rating hot leads warm leads smart score high intent' },
-    { id: 'leadscoringsettings', label: 'AI Scoring Settings', icon: '⚙', roles: ['admin', 'manager'], search: 'ai score ai lead rating lead scoring settings thresholds rules' },
     { id: 'whatsappreport', label: 'WhatsApp Report',  icon: '💬', roles: ['admin', 'manager', 'team_leader'], search: 'whatsapp report message report whatsapp analytics' },
     { id: 'campaignreport', label: 'Campaign Report',  icon: '📊', roles: ['admin', 'manager', 'team_leader'], search: 'campaign report campaign analytics' }
   ] },
@@ -4454,8 +4452,6 @@ const LEAD_COLUMNS = [
   { key: 'created',     label: 'Created',       default: true },
   /* LEAD_LIST_UPDATED_v1 — last-updated timestamp column. Off by default. */
   { key: 'updated',     label: 'Last Updated',  default: false },
-  /* LEAD_SCORING_v1 P1.5 — Smart Score column. On by default when Lead Scoring is enabled. */
-  { key: 'smart_score', label: 'AI Score',       default: true }
 ];
 
 // FEATURE_SPOTLIGHT_v1 — 2-slide popup teaching users about the new
@@ -6592,6 +6588,7 @@ async function openHeatTraceModal() {
   });
 }
 function renderHeatChip(l) {
+  return null; /* AI badge removed for NextEra clone */
   if (!l || !l.heat_label) return null;
   const map = {
     cold:     { emoji: '❄️', bg: '#dbeafe', fg: '#1e40af', label: 'Cold' },
