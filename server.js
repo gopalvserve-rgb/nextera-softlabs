@@ -34,6 +34,7 @@ const signup = require('./routes/saas/signup');
 const tenants = require('./routes/saas/tenants');
 const invoices = require('./routes/saas/invoices');
 const settings = require('./routes/saas/saasSettings');
+const cms = require('./routes/saas/cms');
 const announcements = require('./routes/saas/announcements');
 const customReqs = require('./routes/saas/customRequirements');
 const webhookLogs = require('./routes/saas/webhookLogs');
@@ -95,7 +96,7 @@ try {
 // Combine every SaaS api_* into one dispatch map
 const SAAS_API = {};
 [
-  superAdmin, packages, signup, tenants, invoices, settings,
+  superAdmin, packages, signup, tenants, invoices, settings, cms,
   announcements, customReqs, webhookLogs, errorLogs, whatsbotBackfill, applySchema, crashReport,
   aiSettings, aiCosting,
   tenantModules, demoTenant,
@@ -1021,15 +1022,26 @@ app.get('/api/saas/helpShots',       helpShots.expressList);
 // Public brand JSON (used by the landing page)
 app.get('/api/saas/brand', async (_req, res) => {
   try {
-    const [name, tagline, subhead, color, logo, support] = await Promise.all([
-      control.getSetting('PLATFORM_NAME', 'SmartCRM'),
+    const [name, tagline, subhead, color, logoUrl, logoUpload, support, phone, address, footer, features] = await Promise.all([
+      control.getSetting('PLATFORM_NAME', 'NextEra Softlabs'),
       control.getSetting('PLATFORM_TAGLINE', 'The CRM your sales team will actually use'),
       control.getSetting('PLATFORM_HERO_SUBHEAD', ''),
       control.getSetting('PLATFORM_PRIMARY_COLOR', '#10b981'),
       control.getSetting('PLATFORM_LOGO_URL', ''),
-      control.getSetting('SUPPORT_EMAIL', '')
+      control.getSetting('PLATFORM_LOGO', ''),
+      control.getSetting('SUPPORT_EMAIL', ''),
+      control.getSetting('SUPPORT_PHONE', ''),
+      control.getSetting('PLATFORM_CONTACT_ADDRESS', ''),
+      control.getSetting('PLATFORM_FOOTER_TEXT', ''),
+      control.getSetting('PLATFORM_FEATURES', '')
     ]);
-    res.json({ name, tagline, subhead, color, logo, support });
+    let pages = [];
+    try { pages = await cms.listPublishedPages(); } catch (_) {}
+    const featureList = String(features || '').split('\n').map(x => x.trim()).filter(Boolean).map(line => {
+      const parts = line.split('|').map(x => x.trim());
+      return { icon: parts[0] || '•', title: parts[1] || '', desc: parts[2] || '' };
+    });
+    res.json({ name, tagline, subhead, color, logo: (logoUpload || logoUrl), support, phone, address, footer, features: featureList, pages });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1099,6 +1111,33 @@ app.get('/signup/return', async (req, res) => {
     return res.redirect('/?error=' + encodeURIComponent(e.message));
   }
 });
+
+// ---- Public CMS pages (/p/:slug, /about, /privacy, /terms) -----
+async function _renderCmsPage(slug, res) {
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  try {
+    const page = await cms.getPublishedPage(slug);
+    if (!page) return res.status(404).send('<h1>404 - page not found</h1><p><a href="/">Home</a></p>');
+    const name = await control.getSetting('PLATFORM_NAME', 'NextEra Softlabs');
+    const logo = (await control.getSetting('PLATFORM_LOGO', '')) || (await control.getSetting('PLATFORM_LOGO_URL', ''));
+    res.set('Content-Type', 'text/html; charset=utf-8').send(
+      '<!doctype html><html lang="en"><head>'
+      + '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+      + '<title>' + esc(page.title) + ' - ' + esc(name) + '</title>'
+      + '<link rel="stylesheet" href="/saas/landing.css?v=2026-06-18-nextera-v1">'
+      + '<style>.cms-top{display:flex;align-items:center;gap:.5rem;padding:1rem 1.25rem;border-bottom:1px solid #e5e7eb}.cms-top img{height:30px}.cms-wrap{max-width:820px;margin:0 auto;padding:2rem 1.25rem 4rem}.cms-wrap h1{margin:.2rem 0 1.2rem}.cms-body{line-height:1.7;color:#1f2937}.cms-body h2{margin-top:1.6rem}.cms-back{display:inline-block;margin-top:2rem}</style>'
+      + '</head><body>'
+      + '<div class="cms-top">' + (logo ? '<img src="' + esc(logo) + '" alt="">' : '<span style="font-size:1.4rem">\uD83C\uDFAF</span>') + '<b>' + esc(name) + '</b></div>'
+      + '<div class="cms-wrap"><h1>' + esc(page.title) + '</h1><div class="cms-body">' + (page.content || '') + '</div>'
+      + '<a class="cms-back" href="/">\u2190 Back to home</a></div>'
+      + '</body></html>'
+    );
+  } catch (e) { res.status(500).send('Error: ' + esc(e.message)); }
+}
+app.get('/p/:slug', (req, res) => _renderCmsPage(req.params.slug, res));
+app.get('/about',   (_req, res) => _renderCmsPage('about', res));
+app.get('/privacy', (_req, res) => _renderCmsPage('privacy', res));
+app.get('/terms',   (_req, res) => _renderCmsPage('terms', res));
 
 // ---- Super-admin SPA shell ------------------------------------
 app.get(/^\/admin\/?(.*)$/, (_req, res) => {

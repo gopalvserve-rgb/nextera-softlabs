@@ -78,12 +78,36 @@ async function api(fn, args) {
   return j.result;
 }
 
+function escHtml(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 async function loadBranding() {
   try {
     const r = await fetch('/api/saas/brand').then(r => r.json());
+    const name = r.name || 'NextEra Softlabs';
     $('#hero-title').textContent = r.tagline || 'The CRM your sales team will actually use';
     $('#hero-sub').textContent = r.subhead || 'Capture leads, auto-dial, AI call summaries, WhatsApp at scale, and follow-up reminders that never let a deal slip — all in one place.';
-    document.title = (r.name || 'SmartCRM') + ' — ' + (r.tagline || '');
+    document.title = name + ' — ' + (r.tagline || '');
+    const nameEl = $('#brand-name'); if (nameEl) nameEl.textContent = name;
+    if (r.logo) { const lg = $('#brand-logo'); const dot = $('#brand-dot'); if (lg) { lg.src = r.logo; lg.hidden = false; } if (dot) dot.style.display = 'none'; }
+    if (r.color) { try { document.documentElement.style.setProperty('--brand', r.color); } catch (_) {} }
+    if (Array.isArray(r.features) && r.features.length) {
+      const grid = $('#features-grid');
+      if (grid) grid.innerHTML = r.features.map(f =>
+        '<div class="feature"><div class="ico">' + (f.icon || '\u2022') + '</div><b>' + escHtml(f.title) + '</b><p>' + escHtml(f.desc) + '</p></div>'
+      ).join('');
+    }
+    const ft = $('#footer-text'); if (ft) ft.textContent = r.footer || ('\u00A9 ' + new Date().getFullYear() + ' ' + name);
+    const fc = $('#footer-contact');
+    if (fc) {
+      const bits = [];
+      if (r.support) bits.push('<a href="mailto:' + escHtml(r.support) + '">' + escHtml(r.support) + '</a>');
+      if (r.phone)   bits.push('<a href="tel:' + escHtml(r.phone) + '">' + escHtml(r.phone) + '</a>');
+      if (r.address) bits.push('<span>' + escHtml(r.address) + '</span>');
+      fc.innerHTML = bits.join(' \u00B7 ');
+    }
+    const fl = $('#footer-links');
+    if (fl && Array.isArray(r.pages)) {
+      fl.innerHTML = r.pages.map(p => '<a href="/p/' + encodeURIComponent(p.slug) + '">' + escHtml(p.title) + '</a>').join(' \u00B7 ');
+    }
   } catch (_) {
     $('#hero-title').textContent = 'The CRM your sales team will actually use';
   }

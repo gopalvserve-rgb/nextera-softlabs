@@ -109,7 +109,7 @@ function renderLogin() {
       route();
     } catch (e) { toast(e.message, 'err'); }
   } },
-    h('h2', {}, 'SmartCRM SaaS Admin'),
+    h('h2', {}, 'NextEra Softlabs SaaS Admin'),
     h('div', { class: 'field' }, h('label', {}, 'Email'), h('input', { name: 'email', type: 'email', required: true, autofocus: true })),
     h('div', { class: 'field' }, h('label', {}, 'Password'), h('input', { name: 'password', type: 'password', required: true })),
     h('button', { class: 'btn', style: { width: '100%', marginTop: '.5rem' } }, 'Sign in')
@@ -135,6 +135,7 @@ const NAV = [
   { id: 'tickets',       label: '🎫 Support Tickets' },   // TKT_ADMIN_v1
   { id: 'admins',        label: '👥 Super Assistants' },
   { id: 'device_health', label: '📱 Device Health' },  /* DEVICE_DIAG_v1 */
+  { id: 'cmspages',      label: '📄 CMS Pages' },
   { id: 'settings',      label: '⚙️ Settings' }
 ];
 
@@ -144,7 +145,7 @@ function renderShell() {
   root.style.display = 'block';
   root.appendChild(h('div', { class: 'shell' },
     h('aside', { class: 'sidebar' },
-      h('div', { class: 'brand' }, '🎯 SmartCRM'),
+      h('div', { class: 'brand' }, '🎯 NextEra Softlabs'),
       h('nav', { id: 'nav' }, ...NAV.map(n => h('a', { 'data-view': n.id, onclick: () => navigate(n.id) }, n.label))),
       h('div', { class: 'footer' }, APP.user ? APP.user.name + ' · ' + APP.user.role : '', h('br'), h('a', { onclick: logout, style: { cursor: 'pointer', color: '#94a3b8' } }, 'Logout'))
     ),
@@ -1788,6 +1789,31 @@ function editAdmin(a) {
   document.body.appendChild(m);
 }
 
+VIEWS.cmspages = async (view) => {
+  view.appendChild(h('h1', {}, '📄 CMS Pages'));
+  view.appendChild(h('p', { class: 'muted', style: { marginTop: '-.5rem' } }, 'Edit your public content pages. They appear at /p/<slug> (e.g. /about, /privacy, /terms) and are linked in the landing footer.'));
+  let pages;
+  try { pages = await api('api_saas_cms_list'); }
+  catch (e) { view.appendChild(h('div', { class: 'error-box' }, e.message)); return; }
+  pages.forEach(p => {
+    const card = h('div', { class: 'card' });
+    card.appendChild(h('h2', {}, p.title || p.slug));
+    const titleIn = h('input', { value: p.title || '', style: { fontWeight: '600' } });
+    const bodyIn  = h('textarea', { rows: 10, style: { width: '100%', fontFamily: 'monospace', fontSize: '.85rem' } }, p.content || '');
+    card.appendChild(h('div', { class: 'field' }, h('label', {}, 'Title'), titleIn));
+    card.appendChild(h('div', { class: 'field' }, h('label', {}, 'Content (HTML allowed)'), bodyIn));
+    card.appendChild(h('div', { style: { display: 'flex', gap: '.5rem', alignItems: 'center', marginTop: '.4rem' } },
+      h('button', { class: 'btn', onclick: async () => {
+        try { await api('api_saas_cms_save', { slug: p.slug, title: titleIn.value, content: bodyIn.value }); toast('Saved'); }
+        catch (e) { toast(e.message, 'err'); }
+      } }, '💾 Save'),
+      h('a', { href: '/p/' + p.slug, target: '_blank', class: 'btn ghost' }, 'View ↗'),
+      h('span', { class: 'muted', style: { fontSize: '.78rem' } }, '/p/' + p.slug)
+    ));
+    view.appendChild(card);
+  });
+};
+
 VIEWS.settings = async (view) => {
   view.appendChild(h('h1', {}, 'Settings'));
   let list;
@@ -1815,7 +1841,19 @@ VIEWS.settings = async (view) => {
       const labelEl = h('label', {}, s.label + (s.is_set ? ' ✓' : ''));
       let inputEl;
       const baseProps = { name: s.key };
-      if (s.kind === 'select' && Array.isArray(s.options)) {
+      if (s.kind === 'image') {
+        const hidden = h('input', { type: 'hidden', name: s.key, value: s.value || '' });
+        const preview = h('img', { src: s.value || '', alt: '', style: { maxHeight: '48px', display: s.value ? 'block' : 'none', margin: '.4rem 0', borderRadius: '6px', background: '#f8fafc', padding: '4px', border: '1px solid #e5e7eb' } });
+        const file = h('input', { type: 'file', accept: 'image/*', onchange: ev => {
+          const f = ev.target.files && ev.target.files[0]; if (!f) return;
+          if (f.size > 800 * 1024) { toast('Image too large — use under 800 KB', 'err'); ev.target.value = ''; return; }
+          const rd = new FileReader();
+          rd.onload = () => { hidden.value = rd.result; preview.src = rd.result; preview.style.display = 'block'; };
+          rd.readAsDataURL(f);
+        } });
+        const clr = h('button', { type: 'button', class: 'btn ghost xs', onclick: () => { hidden.value = ''; preview.src = ''; preview.style.display = 'none'; toast('Logo cleared — Save to apply'); } }, 'Clear');
+        inputEl = h('div', {}, preview, h('div', {}, file), h('div', { style: { marginTop: '.3rem' } }, clr), hidden);
+      } else if (s.kind === 'select' && Array.isArray(s.options)) {
         inputEl = h('select', baseProps,
           ...s.options.map(opt => h('option', { value: opt, selected: s.value === opt ? true : null }, opt))
         );
@@ -2255,7 +2293,7 @@ async function openSignupRequestModal(id, onClose) {
       h('button', {
         class: 'btn sm', style: { marginTop: '.75rem' },
         onclick: () => {
-          const txt = `Welcome to SmartCRM!\n\nLogin URL: ${loginUrl}\nEmail: ${row.email}\nPassword: ${row.provisioned_password || ''}`;
+          const txt = `Welcome to NextEra Softlabs!\n\nLogin URL: ${loginUrl}\nEmail: ${row.email}\nPassword: ${row.provisioned_password || ''}`;
           navigator.clipboard.writeText(txt);
           toast('Credentials copied', 'ok');
         }
@@ -2441,7 +2479,7 @@ function showCredentialsModal(r) {
       h('div', { class: 'muted' }, 'Password'),  h('div', {}, h('code', {}, r.password || '—'))
     )
   ));
-  const composed = `Welcome to SmartCRM!\n\nLogin URL: ${r.login_url}\nEmail: ${r.email}\nPassword: ${r.password || ''}\n\nPlease change your password after first login.`;
+  const composed = `Welcome to NextEra Softlabs!\n\nLogin URL: ${r.login_url}\nEmail: ${r.email}\nPassword: ${r.password || ''}\n\nPlease change your password after first login.`;
   body.appendChild(h('div', { style: { display: 'flex', gap: '.5rem', marginTop: '1rem' } },
     h('button', {
       class: 'btn', onclick: () => { navigator.clipboard.writeText(composed); toast('Copied to clipboard', 'ok'); }
@@ -3971,7 +4009,7 @@ function _wlOpenCustomerModal(c) {
         inp('Phone (with +91) *', 'phone'),
         inp('Email', 'email', 'email')
       ),
-      inp('Product name (e.g. SmartCRM White Label)', 'product_name'),
+      inp('Product name (e.g. NextEra Softlabs White Label)', 'product_name'),
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' } },
         inp('Total users', 'total_users', 'number', { min: '0' }),
         inp('Monthly ₹', 'monthly_amount', 'number', { min: '0', step: '0.01' }),

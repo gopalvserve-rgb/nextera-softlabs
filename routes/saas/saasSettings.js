@@ -59,7 +59,11 @@ const SETTING_KEYS = [
   { key: 'PLATFORM_LOGO_URL',     group: 'brand',  label: 'Logo URL',                  mask: false },
   { key: 'PLATFORM_PRIMARY_COLOR',group: 'brand',  label: 'Primary brand color',       mask: false },
   { key: 'SUPPORT_EMAIL',         group: 'brand',  label: 'Support email',             mask: false },
-  { key: 'SUPPORT_PHONE',         group: 'brand',  label: 'Support phone',             mask: false }
+  { key: 'SUPPORT_PHONE',         group: 'brand',  label: 'Support phone',             mask: false },
+  { key: 'PLATFORM_LOGO',         group: 'brand',  label: 'Logo (upload image)',       mask: false, kind: 'image', hint: 'Upload a PNG/JPG/SVG (under 800 KB). Shown in the landing header + CMS pages. Overrides the Logo URL.' },
+  { key: 'PLATFORM_CONTACT_ADDRESS', group: 'brand', label: 'Contact address',         mask: false, kind: 'textarea', hint: 'Shown in the landing footer.' },
+  { key: 'PLATFORM_FOOTER_TEXT',  group: 'brand',  label: 'Footer text',               mask: false, hint: 'e.g. (c) 2026 NextEra Softlabs. Blank = sensible default.' },
+  { key: 'PLATFORM_FEATURES',     group: 'brand',  label: 'Landing features',          mask: false, kind: 'textarea', hint: 'One per line: emoji | Title | Short description. Blank keeps the defaults.' }
 ];
 
 async function api_saas_settings_get(token) {
@@ -106,8 +110,8 @@ async function api_saas_settings_testEmail(token, payload) {
   const me = await requireFullAdmin(token);
   const to = (payload && payload.to) || me.email;
   await saasMailer.sendMail({
-    to, subject: '✅ SmartCRM SaaS — SMTP test',
-    html: `<p>Hi ${me.name},</p><p>This is a test email from your SmartCRM admin panel — your SMTP credentials are working correctly. 🎉</p><p style="font-size:.85rem;color:#64748b">If you're seeing this, signups will receive their welcome emails.</p>`
+    to, subject: '✅ NextEra Softlabs — SMTP test',
+    html: `<p>Hi ${me.name},</p><p>This is a test email from your NextEra Softlabs admin panel — your SMTP credentials are working correctly. 🎉</p><p style="font-size:.85rem;color:#64748b">If you're seeing this, signups will receive their welcome emails.</p>`
   });
   return { ok: true, sent_to: to };
 }
