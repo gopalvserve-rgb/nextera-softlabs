@@ -8,7 +8,7 @@
  *   SMTP_HOST           smtp.gmail.com
  *   SMTP_PORT           587
  *   MAIL_FROM_EMAIL     sales@smartcrmsolution.com
- *   MAIL_FROM_NAME      SmartCRM
+ *   MAIL_FROM_NAME      NextEra Softlabs
  *   SMTP_USERNAME       sales@smartcrmsolution.com
  *   SMTP_PASSWORD       <gmail app password>
  *   MAIL_CHARSET        utf-8
@@ -38,7 +38,7 @@ async function _getCfg() {
     control.getSetting('SMTP_HOST', ''),
     control.getSetting('SMTP_PORT', '587'),
     control.getSetting('MAIL_FROM_EMAIL', ''),
-    control.getSetting('MAIL_FROM_NAME', 'SmartCRM'),
+    control.getSetting('MAIL_FROM_NAME', 'NextEra Softlabs'),
     control.getSetting('SMTP_USERNAME', ''),
     control.getSetting('SMTP_PASSWORD', ''),
     control.getSetting('MAIL_CHARSET', 'utf-8'),
@@ -82,7 +82,7 @@ async function _getCfg() {
     secure: effEnc === 'SSL' || effPort === 465,   // SSL on 465; TLS uses STARTTLS on 587
     user: effUser,
     pass: effPass,
-    from: effFrom ? `${(fromName || 'SmartCRM').replace(/[<>]/g, '')} <${effFrom}>` : effUser,
+    from: effFrom ? `${(fromName || 'NextEra Softlabs').replace(/[<>]/g, '')} <${effFrom}>` : effUser,
     charset: charset || 'utf-8',
     bcc: bcc || '',
     signature: signature || ''

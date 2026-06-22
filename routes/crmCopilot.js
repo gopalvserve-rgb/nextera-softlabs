@@ -296,7 +296,7 @@ const TOOLS = [
 
   // ---- PLATFORM HELP / SETUP GUIDE -------------------------------
   { name: 'lookup_setup_guide',
-    description: "Look up step-by-step setup instructions from the SmartCRM Setup Guide. Use whenever the user asks 'how do I...', 'how to set up...', 'where do I configure...', 'is there a guide for...', or anything about Pabbly / Make / Zapier / Meta Lead Ads / Google Ads / WhatsApp / AI Bot / SMTP / push notifications / mobile app / custom fields / campaigns / TAT / auto-assign rules / permissions / Calendly / CSV import. Returns the matching guide section with steps + a deep-link URL the user can open.",
+    description: "Look up step-by-step setup instructions from the NextEra Softlabs Setup Guide. Use whenever the user asks 'how do I...', 'how to set up...', 'where do I configure...', 'is there a guide for...', or anything about Pabbly / Make / Zapier / Meta Lead Ads / Google Ads / WhatsApp / AI Bot / SMTP / push notifications / mobile app / custom fields / campaigns / TAT / auto-assign rules / permissions / Calendly / CSV import. Returns the matching guide section with steps + a deep-link URL the user can open.",
     parameters: { type: 'object', properties: {
       query: { type: 'string', description: 'The user setup question, eg. "set up Pabbly", "WhatsApp embedded sign in", "create a custom field"' }
     }, required: ['query'] } },

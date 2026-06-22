@@ -1732,7 +1732,7 @@ const NAV_GROUPS = [
   ] },
   { label: 'Knowledge & Support', icon: '📚', items: [
     { id: 'knowledge',  label: 'Knowledge Base',     icon: '📚', search: 'knowledge knowledge base help article faq' },
-    { id: 'tutorial',   label: 'SmartCRM Tutorial',  icon: '📖', search: 'tutorial guide help' },
+    { id: 'tutorial',   label: 'NextEra Softlabs Tutorial',  icon: '📖', search: 'tutorial guide help' },
     { id: 'kbvideos',   label: 'Video Tutorials',    icon: '🎬', search: 'video tutorial youtube guide' },
     { id: 'tickets',    label: 'Support Tickets',    icon: '🎫', search: 'support ticket help desk raise issue' }
   ] },
@@ -1778,7 +1778,7 @@ function renderShell() {
             <a class="btn ghost topbar-chip" href="#/duetoday" title="Follow-ups due today"><span>📅</span><span class="topbar-chip-label">Due today</span><span class="nav-count" data-count-key="due_today" hidden>0</span></a>
             <a class="btn ghost topbar-chip" href="#/upcoming" title="Upcoming follow-ups"><span>⏰</span><span class="topbar-chip-label">Upcoming</span><span class="nav-count" data-count-key="upcoming" hidden>0</span></a>
             <button class="btn ghost" id="btn-getapp" title="Install / Download the app"><span>📱</span><span class="topbar-getapp-text">Get app</span></button>
-            <a class="btn ghost" id="btn-help" href="https://crm.smartcrmsolution.com/tutorial/" target="_blank" rel="noopener" title="SmartCRM Tutorial — modules, lifecycle, AI, recordings &amp; more"><span>📘</span><span class="topbar-help-text">Help</span></a>
+            <a class="btn ghost" id="btn-help" href="https://crm.smartcrmsolution.com/tutorial/" target="_blank" rel="noopener" title="NextEra Softlabs Tutorial — modules, lifecycle, AI, recordings &amp; more"><span>📘</span><span class="topbar-help-text">Help</span></a>
             <button class="btn ghost" id="btn-changelog" title="What's New — recent updates" style="position:relative">🎁<span class="badge" id="changelog-count" hidden style="background:#dc2626">0</span></button>
             <a class="btn ghost" id="btn-wa-notif" href="#/whatsbot/chat" title="WhatsApp inbox" style="position:relative;text-decoration:none">💬<span class="badge" id="wa-notif-count" hidden style="background:#16a34a">0</span></a>
             <button class="btn ghost" id="btn-notif" title="Notifications">🔔<span class="badge" id="notif-count" hidden>0</span></button>
@@ -23195,7 +23195,7 @@ async function adminMetaCapi() {
   // META_CAPI_HIDE_CRM_MODE_v1 — CRM data source in Meta Events Manager is
   // gated behind their CRM Partner Program (only ~30 platforms whitelisted).
   // Tenants who pick the CRM radio option are forced to choose a "partner"
-  // and SmartCRM isn't on that list — they can't complete the setup. So we
+  // and NextEra Softlabs isn't on that list — they can't complete the setup. So we
   // hide the yellow card to avoid sending them down a dead end. The Offline
   // data source achieves the same FB-Lead-Ad optimisation thanks to
   // leadgen_id matching (META_CAPI_LEADGEN_ID_v1). Backend columns + save
@@ -23536,7 +23536,7 @@ async function adminMetaCapi() {
     h('ol', { style: { paddingLeft: '1.25rem', marginTop: '.5rem' } },
       h('li', {}, 'Go to ', h('a', { href: 'https://business.facebook.com/events_manager', target: '_blank' }, 'business.facebook.com/events_manager'), '.'),
       h('li', {}, 'Click ', h('b', {}, 'Connect Data Sources'), ' → choose ', h('b', {}, 'CRM'), ' → click ', h('b', {}, 'Connect'), '.'),
-      h('li', {}, 'Give the data source a name (e.g. "SmartCRM Offline") → accept Meta\'s data-use terms.'),
+      h('li', {}, 'Give the data source a name (e.g. "NextEra Softlabs Offline") → accept Meta\'s data-use terms.'),
       h('li', {}, 'On the new data source page, click ', h('b', {}, 'Settings'), ' → copy the long ', h('b', {}, 'Offline Event Set ID'), ' (a 15-16 digit number).'),
       h('li', {}, 'Paste it into the field above ↑ and click ', h('b', {}, 'Verify connection'), '.'),
       h('li', {}, 'Pick which lead statuses count as conversions (e.g. Won = Purchase, Demo Done = Schedule).'),
@@ -29964,7 +29964,7 @@ function configForm(cfg, keys, meta) {
  * TEAM_LIVE_STATUS_v1 (2026-05-28) — Live Team Status panel
  *
  * Full-page view + a compact renderer shared with the dashboard widget.
- * Brand-styled in SmartCRM indigo (#4f46e5), works on web + APK (mobile
+ * Brand-styled in NextEra Softlabs indigo (#4f46e5), works on web + APK (mobile
  * web) without any layout breakage. Auto-refreshes every 15s.
  *
  *   API:  api_team_liveStatus  → { summary:{state:count}, users:[…] }
@@ -30134,7 +30134,7 @@ VIEWS.teamlive = async (view) => {
     h('button', { class: 'btn', onclick: () => _tlvRefresh() }, '🔄 Refresh')
   ));
 
-  // SmartCRM indigo header strip — branding cue
+  // NextEra Softlabs indigo header strip — branding cue
   view.appendChild(h('div', {
     style: {
       background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
@@ -39582,7 +39582,7 @@ function _initStickyWidget() {
 })();
 
 // ============================================================
-// 📚 SmartCRM Showcase Tour — interactive in-app walkthrough
+// 📚 NextEra Softlabs Showcase Tour — interactive in-app walkthrough
 // ============================================================
 // Runs automatically on first login of the showcase demo tenant
 // (config flag DEMO_TOUR_ENABLED=1) and can be re-launched any time
@@ -39600,7 +39600,7 @@ function _initStickyWidget() {
 const _SHOWCASE_TOUR_STEPS = [
   {
     hash: '#/dashboard',
-    title: '👋 Welcome to SmartCRM Showcase',
+    title: '👋 Welcome to NextEra Softlabs Showcase',
     body: 'This is a demo workspace pre-loaded with sample leads, recordings, AI summaries, and quotations. Take this 90-second tour to see the highlights — you can re-open it any time from the 📚 button in the bottom-right.',
     placement: 'center'
   },
@@ -39727,7 +39727,7 @@ function _openNewFeaturesTour() {
 
   modal.appendChild(h('div', { class: 'modal-head' },
     h('div', {},
-      h('h3', { style: { margin: 0 } }, '✨ What\'s new in SmartCRM'),
+      h('h3', { style: { margin: 0 } }, '✨ What\'s new in NextEra Softlabs'),
       h('div', { class: 'muted', style: { fontSize: '.82rem', marginTop: '.2rem' } },
         'Three big updates landed today — here\'s how to get the most out of them.')
     ),
@@ -45679,7 +45679,7 @@ try {
         const warn = h('div', { style:{ background:'#fef3c7', border:'1px solid #fcd34d', padding:'.7rem', borderRadius:'8px', marginBottom:'1rem' } },
           h('div', { style:{ fontWeight:600, color:'#92400e', marginBottom:'.3rem' } }, '⚠ Your Facebook connection is missing the ads_management permission'),
           h('div', { style:{ fontSize:'.85em', color:'#92400e', marginBottom:'.5rem' } },
-            'Click Reconnect to grant SmartCRM permission to create campaigns on your behalf. ' +
+            'Click Reconnect to grant NextEra Softlabs permission to create campaigns on your behalf. ' +
             'Your existing ad reports and other Meta features will keep working — only adds new permissions.'),
           h('button', { class:'btn primary sm', onclick: async () => {
             try {
@@ -46861,7 +46861,7 @@ VIEWS.tutorial = async (view) => {
   try { window.open('/tutorial/', '_blank', 'noopener'); } catch (e) {}
   view.innerHTML = '<div style="padding:40px;text-align:center;color:#5b6478">' +
     '<div style="font-size:48px;margin-bottom:10px">📚</div>' +
-    '<h2 style="font-family:Georgia,serif;margin:0 0 8px;color:#1E2761">SmartCRM Tutorial</h2>' +
+    '<h2 style="font-family:Georgia,serif;margin:0 0 8px;color:#1E2761">NextEra Softlabs Tutorial</h2>' +
     '<p style="max-width:520px;margin:0 auto 22px">The tutorial opened in a new tab. ' +
     'If it didn\'t, your browser may have blocked the popup.</p>' +
     '<a href="/tutorial/" target="_blank" rel="noopener" ' +

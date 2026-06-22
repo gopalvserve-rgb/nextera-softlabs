@@ -26,11 +26,11 @@
 // in the search list as a one-liner.
 const DEFAULT_ARTICLES = [
   {
-    title: 'Welcome — how SmartCRM is organised',
+    title: 'Welcome — how NextEra Softlabs is organised',
     category: 'faq',
     is_pinned: 1,
     body:
-`SmartCRM groups every screen into 5 sections in the left sidebar:
+`NextEra Softlabs groups every screen into 5 sections in the left sidebar:
 
 • **Sales** — Leads, Pipeline, Kanban, Follow-ups, Calendar, Targets, New leads, Overdue, Due today, Upcoming
 • **Calls** — Dialer, Call insights, Call ratings, AI usage
@@ -81,10 +81,10 @@ To re-watch the welcome tour: this tab → 🎬 Re-watch tour button.`
 • Bulk imports respect your monthly leads quota — see Settings → Plan.`
   },
   {
-    title: 'Connect WhatsApp Business to SmartCRM',
+    title: 'Connect WhatsApp Business to NextEra Softlabs',
     category: 'faq',
     body:
-`SmartCRM uses the **Meta WhatsApp Cloud API** — official, no scraping, no banning. You need:
+`NextEra Softlabs uses the **Meta WhatsApp Cloud API** — official, no scraping, no banning. You need:
 • A WhatsApp Business number (a fresh number works best)
 • A Meta business account
 
@@ -126,13 +126,13 @@ Once connected:
     title: 'Connect Facebook / Instagram Lead Ads',
     category: 'faq',
     body:
-`Pull leads from your Facebook & Instagram ad campaigns into SmartCRM in real time.
+`Pull leads from your Facebook & Instagram ad campaigns into NextEra Softlabs in real time.
 
 **Steps:**
 1. **Settings → Facebook Lead Ads** (admin only)
 2. Click **Connect with Facebook**
 3. Approve permissions — pick the pages whose lead forms should sync
-4. SmartCRM auto-subscribes to webhooks for those pages
+4. NextEra Softlabs auto-subscribes to webhooks for those pages
 
 **Leads land instantly:** when someone submits an ad lead form, you'll see them in the Leads list within a few seconds, with the source set to "Facebook" (or "Instagram") and a tag matching the form name.
 
@@ -148,10 +148,10 @@ Once connected:
 
 **Required:**
 • Recording must already be enabled in your phone's call recorder app (Stock Recorder, Truecaller, ACR, etc.)
-• You need to grant SmartCRM access to the folder where recordings are saved
+• You need to grant NextEra Softlabs access to the folder where recordings are saved
 
 **Steps (first run):**
-1. Sign in on the SmartCRM Android app
+1. Sign in on the NextEra Softlabs Android app
 2. The first-run modal asks you to **Pick recordings folder**
 3. Pick the folder — common locations:
    - Stock Android → Recordings/Call
@@ -168,7 +168,7 @@ Once connected:
     title: 'Manage users, roles and permissions',
     category: 'faq',
     body:
-`SmartCRM has 4 built-in roles:
+`NextEra Softlabs has 4 built-in roles:
 
 • **Admin** — full access, can change settings
 • **Manager** — sees all leads, runs reports, no settings
@@ -231,7 +231,7 @@ Rules execute server-side — they fire even when no one is logged in.`
     title: 'Run reports and export data',
     category: 'faq',
     body:
-`SmartCRM ships 3 reporting layers:
+`NextEra Softlabs ships 3 reporting layers:
 
 **1. Reports tab** — pre-built dashboards:
 • Caller-wise performance (leads, conversions, talk-time, FU compliance)
@@ -252,7 +252,7 @@ All exports respect role permissions: agents can only export their own leads.`
     title: 'Mandatory follow-up dates explained',
     category: 'faq',
     body:
-`When a non-admin user picks one of these 5 statuses, SmartCRM forces them to set a next follow-up date:
+`When a non-admin user picks one of these 5 statuses, NextEra Softlabs forces them to set a next follow-up date:
 
 • Follow Up
 • Visit Done
@@ -295,7 +295,7 @@ Settings → Plan shows current usage vs. limit for each metric, with a progress
     title: 'Webhook integration for third-party forms',
     category: 'faq',
     body:
-`Push leads from website forms, landing pages, or other tools into SmartCRM via HTTP POST.
+`Push leads from website forms, landing pages, or other tools into NextEra Softlabs via HTTP POST.
 
 **Endpoint:** \`https://crm.smartcrmsolution.com/t/<your-slug>/api/webhooks/website\`
 

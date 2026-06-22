@@ -222,8 +222,8 @@ async function _notify({ to, subject, html }) {
 }
 
 async function _platformName() {
-  try { return await control.getSetting('PLATFORM_NAME', 'SmartCRM'); }
-  catch (_) { return 'SmartCRM'; }
+  try { return await control.getSetting('PLATFORM_NAME', 'NextEra Softlabs'); }
+  catch (_) { return 'NextEra Softlabs'; }
 }
 
 async function _supportEmail() {
@@ -256,7 +256,7 @@ function _renderEmail({ title, ticket, intro, bodyHtml, ctaLabel, ctaUrl, brand 
   return `
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;color:#1f2937">
   <div style="background:#0f172a;color:#fff;padding:1rem 1.5rem;border-radius:8px 8px 0 0">
-    <div style="font-size:.78rem;opacity:.7">${safe(brand || 'SmartCRM')}</div>
+    <div style="font-size:.78rem;opacity:.7">${safe(brand || 'NextEra Softlabs')}</div>
     <div style="font-size:1.2rem;font-weight:700;margin-top:.15rem">${safe(title)}</div>
   </div>
   <div style="background:#fff;padding:1.5rem;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 8px 8px">
@@ -273,7 +273,7 @@ function _renderEmail({ title, ticket, intro, bodyHtml, ctaLabel, ctaUrl, brand 
     ${ctaUrl ? `<p style="margin:1.5rem 0 0"><a href="${safe(ctaUrl)}" style="display:inline-block;background:#3b82f6;color:#fff;padding:.6rem 1.2rem;text-decoration:none;border-radius:6px;font-weight:600">${safe(ctaLabel || 'View ticket')}</a></p>` : ''}
   </div>
   <div style="text-align:center;padding:1rem;color:#9ca3af;font-size:.78rem">
-    You're receiving this because you opened or follow this support ticket on ${safe(brand || 'SmartCRM')}.
+    You're receiving this because you opened or follow this support ticket on ${safe(brand || 'NextEra Softlabs')}.
   </div>
 </div>`;
 }

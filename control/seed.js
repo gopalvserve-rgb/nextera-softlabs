@@ -92,7 +92,7 @@ async function seedSettings() {
   const defaults = {
     INSTANCE_PENDING_DELETION_DAYS: '30',
     TRIAL_DAYS_DEFAULT: '7',
-    PLATFORM_NAME: 'SmartCRM',
+    PLATFORM_NAME: 'NextEra Softlabs',
     PLATFORM_TAGLINE: 'The CRM your sales team will actually use',
     PLATFORM_HERO_SUBHEAD: 'Capture leads from Facebook, IndiaMart, Google Ads & your website. Auto-dial, AI call summaries, WhatsApp at scale, and follow-up reminders that never let a deal slip — all in one place.',
     PLATFORM_PRIMARY_COLOR: '#10b981',

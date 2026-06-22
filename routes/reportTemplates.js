@@ -237,7 +237,7 @@ function _renderHtml(tpl, data) {
             '<td style="border-top:1px solid #e5e7eb;text-align:right"><b>' + Number(r.count) + '</b></td></tr>';
   });
   html += '</tbody></table>';
-  html += '<p style="color:#9ca3af;font-size:11px;margin-top:16px">Sent by SmartCRM · ' + new Date().toLocaleString('en-IN', { timeZone: REPORT_TZ }) + '</p></div>';
+  html += '<p style="color:#9ca3af;font-size:11px;margin-top:16px">Sent by NextEra Softlabs · ' + new Date().toLocaleString('en-IN', { timeZone: REPORT_TZ }) + '</p></div>';
   return html;
 }
 

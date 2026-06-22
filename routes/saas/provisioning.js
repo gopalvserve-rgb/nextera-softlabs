@@ -271,7 +271,7 @@ async function provisionFromSignup(signupId) {
   try {
     await mailer.sendMail({
       to: signup.email,
-      subject: '🎉 Your SmartCRM is ready — login details inside',
+      subject: '🎉 Your NextEra Softlabs is ready — login details inside',
       html: _welcomeEmailHtml({
         name: signup.name, orgName: signup.org_name || signup.name,
         loginUrl, email: signup.email, password: oneTimePassword,
@@ -304,7 +304,7 @@ function _computePeriodEnd(start, pkg) {
 function _welcomeEmailHtml({ name, orgName, loginUrl, email, password, packageName }) {
   return `
   <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:1.5rem;color:#0f172a">
-    <h2 style="margin:0 0 1rem 0">Welcome to SmartCRM, ${escape(name)} 🎉</h2>
+    <h2 style="margin:0 0 1rem 0">Welcome to NextEra Softlabs, ${escape(name)} 🎉</h2>
     <p>Your <b>${escape(packageName)}</b> account for <b>${escape(orgName)}</b> is live and ready.</p>
     <div style="background:#f1f5f9;padding:1rem;border-radius:8px;margin:1.25rem 0">
       <div style="font-size:.85rem;color:#475569;margin-bottom:.4rem">Login URL</div>
@@ -315,7 +315,7 @@ function _welcomeEmailHtml({ name, orgName, loginUrl, email, password, packageNa
       <code style="background:#fff;padding:.3rem .6rem;border-radius:4px">${escape(password)}</code>
     </div>
     <p style="font-size:.9rem;color:#475569">For your security, please change this password the first time you log in (Settings → Security).</p>
-    <p style="font-size:.85rem;color:#94a3b8;margin-top:2rem">— The SmartCRM team</p>
+    <p style="font-size:.85rem;color:#94a3b8;margin-top:2rem">— The NextEra Softlabs team</p>
   </div>`;
 }
 

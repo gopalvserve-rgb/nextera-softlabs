@@ -26,7 +26,7 @@
        mobile-web-app-capable is the W3C-spec counterpart for compatibility. -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="SmartCRM" />
+  <meta name="apple-mobile-web-app-title" content="NextEra Softlabs" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="format-detection" content="telephone=no" />
   <script>
@@ -121,7 +121,7 @@
     //   1. Exchanges the ssl token for a regular tenant JWT (api_auth_ssoLogin)
     //   2. Strips ?ssl= from the URL bar so it isn't kept in history
     //   3. THEN loads app.js so the boot code reads the freshly-written
-    //      token from localStorage. (Static <script src="/app.js?v=2026-06-18-nextera-noai-v1" defer>
+    //      token from localStorage. (Static <script src="/app.js?v=2026-06-18-nextera-brand-v1" defer>
     //      would race against the async exchange and the user would land
     //      on the login screen instead of being signed in.)
     (async function bootstrap() {
@@ -162,7 +162,7 @@
         // Wait for DOMContentLoaded before injecting scripts.
         function injectSpaScripts() {
           var s = document.createElement('script');
-          s.src = 'app.js?v=2026-06-18-nextera-noai-v1';
+          s.src = 'app.js?v=2026-06-18-nextera-brand-v1';
           // STU360_LIVE_v1 — Student 360 view (Education pack only)
           var st = document.createElement('script');
           st.src = 'student360.js?v=2026-06-13-ls-v1-p113cb';
@@ -226,7 +226,7 @@
     <div style="display:flex;align-items:flex-start;gap:.7rem;padding-right:1.5rem">
       <div style="font-size:1.8rem;flex-shrink:0">📱</div>
       <div style="flex:1">
-        <div style="font-weight:700;font-size:.95rem;margin-bottom:.2rem">Install SmartCRM on your iPhone</div>
+        <div style="font-weight:700;font-size:.95rem;margin-bottom:.2rem">Install NextEra Softlabs on your iPhone</div>
         <div style="font-size:.78rem;opacity:.8;margin-bottom:.6rem">Works fullscreen like a real app — no App Store needed.</div>
         <button id="ios-install-howto" style="background:#6366f1;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;width:100%">Show me how →</button>
       </div>
@@ -238,7 +238,7 @@
       <button id="ios-howto-close" aria-label="Close" style="position:fixed;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.3rem;width:40px;height:40px;border-radius:50%;cursor:pointer;backdrop-filter:blur(8px)">×</button>
       <div style="text-align:center;margin-bottom:1.5rem">
         <div style="font-size:3rem;margin-bottom:.5rem">📱</div>
-        <h2 style="margin:0 0 .3rem;font-size:1.4rem;font-weight:700">Install SmartCRM on iPhone</h2>
+        <h2 style="margin:0 0 .3rem;font-size:1.4rem;font-weight:700">Install NextEra Softlabs on iPhone</h2>
         <p style="margin:0;opacity:.7;font-size:.85rem">3 quick steps. The install button is inside Safari, not on this page.</p>
       </div>
       <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.2rem;margin-bottom:1rem">
@@ -281,7 +281,7 @@
             <div style="display:flex;align-items:center;gap:.5rem;padding:.6rem;background:rgba(0,0,0,.25);border-radius:8px">
               <div style="background:#6366f1;color:#fff;width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem">🎯</div>
               <div style="font-size:.85rem">
-                <div style="font-weight:600">SmartCRM</div>
+                <div style="font-weight:600">NextEra Softlabs</div>
                 <div style="opacity:.7;font-size:.75rem">On your home screen, fullscreen</div>
               </div>
             </div>

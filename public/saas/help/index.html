@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Setup Guide — SmartCRM</title>
-<meta name="description" content="Step-by-step setup guide for SmartCRM integrations: Pabbly, Meta Lead Ads, Google Ads, WhatsApp, AI Bot, SMTP, push notifications, and more.">
+<title>Setup Guide — NextEra Softlabs</title>
+<meta name="description" content="Step-by-step setup guide for NextEra Softlabs integrations: Pabbly, Meta Lead Ads, Google Ads, WhatsApp, AI Bot, SMTP, push notifications, and more.">
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📘</text></svg>">
 <style>
 :root {
@@ -397,7 +397,7 @@ table.kv td code { white-space: nowrap; }
   <div class="topbar-inner">
     <div class="brand">
       <div class="brand-dot">📘</div>
-      <span>SmartCRM Setup Guide</span>
+      <span>NextEra Softlabs Setup Guide</span>
     </div>
     <div class="search-wrap">
       <span class="search-icon">
@@ -412,7 +412,7 @@ table.kv td code { white-space: nowrap; }
 
 <!-- Hero -->
 <div class="hero">
-  <h1>Set up SmartCRM, step by step.</h1>
+  <h1>Set up NextEra Softlabs, step by step.</h1>
   <p>Every integration explained — from connecting WhatsApp to wiring up Pabbly to enabling the AI Bot. Search above, or jump in below.</p>
   <div class="pills">
     <button class="pill" data-q="webhook">Webhooks</button>
@@ -591,7 +591,7 @@ table.kv td code { white-space: nowrap; }
       <text x="395" y="74" font-size="12" fill="#4f46e5" font-weight="600">📡 Pabbly / Make / Zapier maps to:</text>
       <rect x="395" y="86" width="290" height="22" rx="3" fill="#fff" stroke="#cbd5e1"/>
       <text x="403" y="101" font-size="11" font-family="Menlo, monospace" fill="#0f172a">"campaign_name_new": "Nh-24 Villa –April 2026"</text>
-      <text x="395" y="130" font-size="11" fill="#475569">SmartCRM auto-reads this on every</text>
+      <text x="395" y="130" font-size="11" fill="#475569">NextEra Softlabs auto-reads this on every</text>
       <text x="395" y="146" font-size="11" fill="#475569">/hook/website POST and stores into</text>
       <text x="395" y="162" font-size="11" font-family="Menlo, monospace" fill="#0f172a">extra_json["campaign_name_new"]</text>
       <text x="395" y="200" font-size="11" fill="#16a34a">✓ Visible on lead form</text>
@@ -603,7 +603,7 @@ table.kv td code { white-space: nowrap; }
 </div>
 
 <h3>Sending the value via webhook</h3>
-<p>SmartCRM looks for the field in three places (in this order):</p>
+<p>NextEra Softlabs looks for the field in three places (in this order):</p>
 <div class="example-grid">
 <div>
 <h4>1. Top level (most common)</h4>
@@ -787,14 +787,14 @@ You should get <code>{"ok":true,"id":123}</code>.
 
 <article class="section" id="pabbly" data-keywords="pabbly connect zapier integromat workflow facebook instagram form lead ads automation">
 <h2><span class="num">13</span>🔗 Pabbly Connect — full walkthrough</h2>
-<p class="lede">Bridge Meta Lead Ads, Instagram, Google Forms, JustDial, IndiaMart and 800+ other sources into SmartCRM. End-to-end recipe.</p>
+<p class="lede">Bridge Meta Lead Ads, Instagram, Google Forms, JustDial, IndiaMart and 800+ other sources into NextEra Softlabs. End-to-end recipe.</p>
 
 <div class="flow">
   <div class="flow-step"><strong>Trigger</strong><span>Meta / Forms / etc.</span></div>
   <div class="flow-arrow">→</div>
   <div class="flow-step"><strong>Pabbly</strong><span>API by Pabbly</span></div>
   <div class="flow-arrow">→</div>
-  <div class="flow-step"><strong>SmartCRM</strong><span>/hook/website</span></div>
+  <div class="flow-step"><strong>NextEra Softlabs</strong><span>/hook/website</span></div>
   <div class="flow-arrow">→</div>
   <div class="flow-step"><strong>Lead row</strong><span>+ auto-assign</span></div>
 </div>
@@ -846,7 +846,7 @@ You should get <code>{"ok":true,"id":123}</code>.
 <li><strong>Add the auth header.</strong>
 <p>Click <em>Add a Header</em>. Two rows:</p>
 <table class="kv">
-<tr><td>x-api-key</td><td>Your Website API key from <em>SmartCRM → Settings → Website API</em>. <strong>Tip:</strong> click <em>Regenerate</em> to be sure you're using a fresh one.</td></tr>
+<tr><td>x-api-key</td><td>Your Website API key from <em>NextEra Softlabs → Settings → Website API</em>. <strong>Tip:</strong> click <em>Regenerate</em> to be sure you're using a fresh one.</td></tr>
 <tr><td>Content-Type</td><td><code>application/json</code></td></tr>
 </table>
 </li>
@@ -905,7 +905,7 @@ You should get <code>{"ok":true,"id":123}</code>.
 <tr><td><code>product</code></td><td>Product / package name <span class="tag tag-optional">Optional</span></td></tr>
 <tr><td><code>notes</code></td><td>Free text — useful for question-answer responses</td></tr>
 <tr><td><code>campaign_name</code> / <code>campaign_id</code></td><td>Built-in attribution. Aliases accepted.</td></tr>
-<tr><td>Custom field <code>key</code></td><td>Use the exact <em>Key</em> from <em>SmartCRM → Settings → Custom Fields</em> (eg. <code>campaign_name_new</code>, <code>budget_band</code>, <code>requirement_type</code>).</td></tr>
+<tr><td>Custom field <code>key</code></td><td>Use the exact <em>Key</em> from <em>NextEra Softlabs → Settings → Custom Fields</em> (eg. <code>campaign_name_new</code>, <code>budget_band</code>, <code>requirement_type</code>).</td></tr>
 </table>
 </li>
 
@@ -931,7 +931,7 @@ You should get <code>{"ok":true,"id":123}</code>.
 </div>
 </li>
 
-<li><strong>Verify in SmartCRM.</strong>
+<li><strong>Verify in NextEra Softlabs.</strong>
 <p>Open <em>Leads</em>. The test lead appears at the top, status <em>New</em>. Click it — the custom-field tab should show <em>Campaign Name = Nh-24 Villa</em>, <em>Campaign Id = 120243…</em>.</p></li>
 
 <li><strong>Save the workflow → toggle ON.</strong>
@@ -956,7 +956,7 @@ Content-Type: application/json
 }</code></pre>
 </div>
 <div>
-<h4>📥 SmartCRM responds</h4>
+<h4>📥 NextEra Softlabs responds</h4>
 <pre><code>200 OK
 {
   "ok": true,
@@ -981,14 +981,14 @@ Content-Type: application/json
 <ul>
 <li><strong>Lead arrives but a field is empty.</strong> You dragged the labelled chip in Pabbly (the one that shows <em>"1. Res1 Campaign Name : Nh-24 Villa"</em>) instead of the bare value chip. Re-drag using the inner value tag.</li>
 <li><strong>401 Invalid API key.</strong> Either the key is wrong, or the header name has a typo. Header MUST be <code>x-api-key</code> (lowercase, hyphen). <em>Settings → Website API → Recent inbound</em> shows a redacted prefix of whatever Pabbly actually sent.</li>
-<li><strong>Lead created but custom field missing.</strong> The custom field doesn't exist in SmartCRM yet. Add it at <em>Settings → Custom Fields</em> with the same <em>Key</em> Pabbly is sending — eg. <code>campaign_name_new</code>.</li>
-<li><strong>"campaign_Name" vs "campaign_name".</strong> Keys are case-sensitive. SmartCRM accepts a generous list of aliases for the campaign-name field, but custom-field keys must match exactly.</li>
+<li><strong>Lead created but custom field missing.</strong> The custom field doesn't exist in NextEra Softlabs yet. Add it at <em>Settings → Custom Fields</em> with the same <em>Key</em> Pabbly is sending — eg. <code>campaign_name_new</code>.</li>
+<li><strong>"campaign_Name" vs "campaign_name".</strong> Keys are case-sensitive. NextEra Softlabs accepts a generous list of aliases for the campaign-name field, but custom-field keys must match exactly.</li>
 </ul>
 </div>
 
 <div class="callout callout-info">
 <span class="callout-icon">💡</span>
-<div>The Recent inbound table at <em>SmartCRM → Settings → Website API</em> logs the last 50 hits with status, redacted key prefix, and body keys. Best debug tool when something looks wrong.</div>
+<div>The Recent inbound table at <em>NextEra Softlabs → Settings → Website API</em> logs the last 50 hits with status, redacted key prefix, and body keys. Best debug tool when something looks wrong.</div>
 </div>
 </article>
 
@@ -1005,7 +1005,7 @@ Content-Type: application/json
 </ol>
 <div class="callout callout-info">
 <span class="callout-icon">💡</span>
-<div>SmartCRM has a dedicated <strong>Make.com card</strong> on Settings → <strong>Integrations</strong> — it shows a sample payload and a Test-send button so you can verify the connection without leaving the CRM.</div>
+<div>NextEra Softlabs has a dedicated <strong>Make.com card</strong> on Settings → <strong>Integrations</strong> — it shows a sample payload and a Test-send button so you can verify the connection without leaving the CRM.</div>
 </div>
 </article>
 
@@ -1021,15 +1021,15 @@ Content-Type: application/json
 
 <article class="section" id="meta-leadads" data-keywords="facebook meta lead ads instagram lead form direct webhook fb">
 <h2><span class="num">16</span>📘 Meta (Facebook) Lead Ads</h2>
-<p class="lede">Two ways to wire it up — direct (Facebook → SmartCRM) or via Pabbly. Direct is faster but has less flexibility.</p>
+<p class="lede">Two ways to wire it up — direct (Facebook → NextEra Softlabs) or via Pabbly. Direct is faster but has less flexibility.</p>
 <h3>Option A — Direct via Facebook OAuth (recommended for one or two pages)</h3>
 <ol class="steps">
 <li><strong>Settings → Facebook → Connect Facebook account.</strong> A Facebook OAuth popup opens.</li>
-<li><strong>Approve permissions.</strong> SmartCRM needs <code>leads_retrieval</code> + <code>pages_manage_metadata</code>.</li>
+<li><strong>Approve permissions.</strong> NextEra Softlabs needs <code>leads_retrieval</code> + <code>pages_manage_metadata</code>.</li>
 <li><strong>Pick the Page(s).</strong> Tick the pages whose leads you want to receive.</li>
 <li><strong>Pick the Form(s).</strong> Tick the lead-gen forms inside each page.</li>
-<li><strong>Webhook auto-subscribes.</strong> SmartCRM registers our central webhook with Meta automatically — no need to copy URLs into Meta's Developer console.</li>
-<li><strong>Test it.</strong> Use Meta's "Lead Ads Testing" tool inside Facebook Business Suite to fire a test lead. It should appear in SmartCRM within a few seconds.</li>
+<li><strong>Webhook auto-subscribes.</strong> NextEra Softlabs registers our central webhook with Meta automatically — no need to copy URLs into Meta's Developer console.</li>
+<li><strong>Test it.</strong> Use Meta's "Lead Ads Testing" tool inside Facebook Business Suite to fire a test lead. It should appear in NextEra Softlabs within a few seconds.</li>
 </ol>
 <h3>Option B — Pabbly bridge (when direct doesn't work, eg. agency-managed pages)</h3>
 <p>Use the <a href="#pabbly">Pabbly Connect</a> recipe above with Facebook Lead Ads as trigger.</p>
@@ -1043,7 +1043,7 @@ Content-Type: application/json
 <pre><code>?campaign={campaignid}&campaign_name={campaignname}&network={network}&keyword={keyword}&gclid={gclid}&adgroupid={adgroupid}&matchtype={matchtype}&device={device}</code></pre>
 </li>
 <li><strong>Submit them with the lead.</strong> Include the params in your POST body to <code>/hook/website</code> (alongside <code>name</code>/<code>phone</code>/<code>email</code>).</li>
-<li><strong>What gets stored.</strong> SmartCRM normalises Google Ads params into both first-class columns AND <code>meta_json</code> — so any reports already built on either keep working:
+<li><strong>What gets stored.</strong> NextEra Softlabs normalises Google Ads params into both first-class columns AND <code>meta_json</code> — so any reports already built on either keep working:
 <table class="kv">
 <tr><td><code>gclid</code></td><td>First-class column. Use it to upload offline conversions back to Google Ads.</td></tr>
 <tr><td><code>gad_campaignid</code></td><td>First-class column.</td></tr>
@@ -1063,7 +1063,7 @@ Content-Type: application/json
 <li><strong>Export from your old CRM.</strong> CSV format. UTF-8 encoded. Make sure phone numbers aren't in scientific notation (Excel does this — open in Google Sheets or use plain Numbers/text format).</li>
 <li><strong>Settings → Integrations → Import → Upload CSV.</strong></li>
 <li><strong>Pick your source platform.</strong> LeadSquared / Zoho / HubSpot / Salesforce / Generic. The wizard auto-detects column names for the first four.</li>
-<li><strong>Map any unmapped columns.</strong> The wizard shows a side-by-side: their column → SmartCRM field. Custom fields are pre-listed so you can map directly into them.</li>
+<li><strong>Map any unmapped columns.</strong> The wizard shows a side-by-side: their column → NextEra Softlabs field. Custom fields are pre-listed so you can map directly into them.</li>
 <li><strong>Preview the first 5 rows.</strong> Make sure phones look right, statuses match (the wizard maps them to your existing statuses or asks you to create new ones), no <code>NaN</code> or shifted columns.</li>
 <li><strong>Import.</strong> The job runs in the background. You'll see a counter as rows land. Duplicates respect your <a href="#duplicates">duplicate policy</a>.</li>
 </ol>
@@ -1078,7 +1078,7 @@ Content-Type: application/json
 <div class="copy-row"><span class="copy-content">https://crm.smartcrmsolution.com/hook/calendly/&lt;your-token&gt;</span><button class="copy-btn">Copy</button></div>
 Subscribe to <em>invitee.created</em>.
 </li>
-<li><strong>Match logic.</strong> When a Calendly booking arrives, SmartCRM matches by phone and email. If a lead exists, it updates <code>next_followup_at</code> to the booking time. If not, it creates a new lead assigned to you.</li>
+<li><strong>Match logic.</strong> When a Calendly booking arrives, NextEra Softlabs matches by phone and email. If a lead exists, it updates <code>next_followup_at</code> to the booking time. If not, it creates a new lead assigned to you.</li>
 </ol>
 </article>
 
@@ -1088,15 +1088,15 @@ Subscribe to <em>invitee.created</em>.
 
 <div class="callout callout-info">
 <span class="callout-icon">ℹ️</span>
-<div><strong>Before you start:</strong> you need (a) a Facebook account that owns your business, (b) a phone number you can receive an OTP on, and (c) admin access in SmartCRM. That's it.</div>
+<div><strong>Before you start:</strong> you need (a) a Facebook account that owns your business, (b) a phone number you can receive an OTP on, and (c) admin access in NextEra Softlabs. That's it.</div>
 </div>
 
 <h3>Step-by-step (with screenshots)</h3>
 <ol class="steps">
 
 <li><strong>Open Settings → WhatsApp</strong>
-<p>From the left sidebar in SmartCRM, click ⚙️ <em>Settings</em>, then open the <em>WhatsApp</em> tab.</p>
-<div class="shot"><svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Step 1 — Sidebar → Settings → WhatsApp tab"><rect width="560" height="320" fill="#f8fafc"/><rect x="0" y="0" width="160" height="320" fill="#0f172a"/><text x="20" y="35" font-family="Inter,Arial,sans-serif" font-size="13" fill="#fff" font-weight="700">🎯 SmartCRM</text><text x="20" y="75"  font-family="Inter,Arial,sans-serif" font-size="11" fill="#94a3b8">📊 Dashboard</text><text x="20" y="100" font-family="Inter,Arial,sans-serif" font-size="11" fill="#94a3b8">🎯 Leads</text><text x="20" y="125" font-family="Inter,Arial,sans-serif" font-size="11" fill="#94a3b8">💬 Chat</text><rect x="10" y="142" width="140" height="22" fill="#1e293b" rx="4"/><text x="20" y="158" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" font-weight="600">⚙️ Settings</text><rect x="180" y="20" width="360" height="280" fill="#fff" stroke="#e5e7eb"/><text x="200" y="50" font-family="Inter,Arial,sans-serif" font-size="14" fill="#0f172a" font-weight="700">Settings</text><text x="200" y="85"  font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Company</text><text x="200" y="110" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Users</text><rect x="190" y="120" width="340" height="32" fill="#eff6ff" rx="4"/><text x="200" y="140" font-family="Inter,Arial,sans-serif" font-size="11" fill="#1d4ed8" font-weight="700">💬 WhatsApp</text><text x="200" y="170" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Email / SMTP</text><text x="200" y="195" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Theme</text><rect x="180" y="116" width="360" height="40" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,3" rx="4"/><g transform="translate(550,136)"><rect x="0" y="-12" width="88" height="24" fill="#3b82f6" rx="3"/><text x="44" y="4" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Click here</text><polygon points="-6,0 0,-5 0,5" fill="#3b82f6"/></g></svg><div class="shot-cap">Step 1 — Sidebar → Settings → WhatsApp tab</div></div>
+<p>From the left sidebar in NextEra Softlabs, click ⚙️ <em>Settings</em>, then open the <em>WhatsApp</em> tab.</p>
+<div class="shot"><svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Step 1 — Sidebar → Settings → WhatsApp tab"><rect width="560" height="320" fill="#f8fafc"/><rect x="0" y="0" width="160" height="320" fill="#0f172a"/><text x="20" y="35" font-family="Inter,Arial,sans-serif" font-size="13" fill="#fff" font-weight="700">🎯 NextEra Softlabs</text><text x="20" y="75"  font-family="Inter,Arial,sans-serif" font-size="11" fill="#94a3b8">📊 Dashboard</text><text x="20" y="100" font-family="Inter,Arial,sans-serif" font-size="11" fill="#94a3b8">🎯 Leads</text><text x="20" y="125" font-family="Inter,Arial,sans-serif" font-size="11" fill="#94a3b8">💬 Chat</text><rect x="10" y="142" width="140" height="22" fill="#1e293b" rx="4"/><text x="20" y="158" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" font-weight="600">⚙️ Settings</text><rect x="180" y="20" width="360" height="280" fill="#fff" stroke="#e5e7eb"/><text x="200" y="50" font-family="Inter,Arial,sans-serif" font-size="14" fill="#0f172a" font-weight="700">Settings</text><text x="200" y="85"  font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Company</text><text x="200" y="110" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Users</text><rect x="190" y="120" width="340" height="32" fill="#eff6ff" rx="4"/><text x="200" y="140" font-family="Inter,Arial,sans-serif" font-size="11" fill="#1d4ed8" font-weight="700">💬 WhatsApp</text><text x="200" y="170" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Email / SMTP</text><text x="200" y="195" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Theme</text><rect x="180" y="116" width="360" height="40" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,3" rx="4"/><g transform="translate(550,136)"><rect x="0" y="-12" width="88" height="24" fill="#3b82f6" rx="3"/><text x="44" y="4" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Click here</text><polygon points="-6,0 0,-5 0,5" fill="#3b82f6"/></g></svg><div class="shot-cap">Step 1 — Sidebar → Settings → WhatsApp tab</div></div>
 <ul class="mini-steps">
 <li>Click the gear icon at the bottom of the left sidebar.</li>
 <li>In the Settings rail, click <em>WhatsApp</em>.</li>
@@ -1116,7 +1116,7 @@ Subscribe to <em>invitee.created</em>.
 
 <li><strong>Authorise in the Facebook popup</strong>
 <p>A Facebook window opens. Sign in with the FB account that owns your business pages.</p>
-<div class="shot"><svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Step 3 — Facebook authorisation popup (one-time)"><rect width="560" height="340" fill="#e7e7e7"/><rect x="60" y="40" width="440" height="260" fill="#fff" rx="10" stroke="#dbdbdb"/><rect x="60" y="40" width="440" height="50" fill="#1877F2" rx="10"/><text x="80" y="72" font-family="Inter,Arial,sans-serif" font-size="14" fill="#fff" font-weight="700">facebook</text><text x="80" y="120" font-family="Inter,Arial,sans-serif" font-size="13" fill="#0f172a" font-weight="700">SmartCRM is requesting:</text><text x="80" y="148" font-family="Inter,Arial,sans-serif" font-size="11" fill="#475569">✓  Manage your WhatsApp Business Account</text><text x="80" y="170" font-family="Inter,Arial,sans-serif" font-size="11" fill="#475569">✓  Send and receive messages on your behalf</text><text x="80" y="192" font-family="Inter,Arial,sans-serif" font-size="11" fill="#475569">✓  Read your business asset list</text><rect x="80"  y="240" width="180" height="38" fill="#fff" stroke="#cbd5e1" rx="6"/><text x="170" y="265" font-family="Inter,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Cancel</text><rect x="280" y="240" width="180" height="38" fill="#1877F2" rx="6"/><text x="370" y="265" font-family="Inter,Arial,sans-serif" font-size="12" fill="#fff" text-anchor="middle" font-weight="700">Continue as Owner</text><rect x="276" y="236" width="188" height="46" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,3" rx="4"/><g transform="translate(474,259)"><rect x="0" y="-12" width="116" height="24" fill="#3b82f6" rx="3"/><text x="58" y="4" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Click Continue</text><polygon points="-6,0 0,-5 0,5" fill="#3b82f6"/></g></svg><div class="shot-cap">Step 3 — Facebook authorisation popup (one-time)</div></div>
+<div class="shot"><svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Step 3 — Facebook authorisation popup (one-time)"><rect width="560" height="340" fill="#e7e7e7"/><rect x="60" y="40" width="440" height="260" fill="#fff" rx="10" stroke="#dbdbdb"/><rect x="60" y="40" width="440" height="50" fill="#1877F2" rx="10"/><text x="80" y="72" font-family="Inter,Arial,sans-serif" font-size="14" fill="#fff" font-weight="700">facebook</text><text x="80" y="120" font-family="Inter,Arial,sans-serif" font-size="13" fill="#0f172a" font-weight="700">NextEra Softlabs is requesting:</text><text x="80" y="148" font-family="Inter,Arial,sans-serif" font-size="11" fill="#475569">✓  Manage your WhatsApp Business Account</text><text x="80" y="170" font-family="Inter,Arial,sans-serif" font-size="11" fill="#475569">✓  Send and receive messages on your behalf</text><text x="80" y="192" font-family="Inter,Arial,sans-serif" font-size="11" fill="#475569">✓  Read your business asset list</text><rect x="80"  y="240" width="180" height="38" fill="#fff" stroke="#cbd5e1" rx="6"/><text x="170" y="265" font-family="Inter,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Cancel</text><rect x="280" y="240" width="180" height="38" fill="#1877F2" rx="6"/><text x="370" y="265" font-family="Inter,Arial,sans-serif" font-size="12" fill="#fff" text-anchor="middle" font-weight="700">Continue as Owner</text><rect x="276" y="236" width="188" height="46" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,3" rx="4"/><g transform="translate(474,259)"><rect x="0" y="-12" width="116" height="24" fill="#3b82f6" rx="3"/><text x="58" y="4" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Click Continue</text><polygon points="-6,0 0,-5 0,5" fill="#3b82f6"/></g></svg><div class="shot-cap">Step 3 — Facebook authorisation popup (one-time)</div></div>
 <ul class="mini-steps">
 <li>Sign in with your business Facebook account.</li>
 <li>Review the permissions Meta lists — they're all needed.</li>
@@ -1136,7 +1136,7 @@ Subscribe to <em>invitee.created</em>.
 
 <li><strong>Pick or add a phone number</strong>
 <p>Meta asks which phone number to use. You can pick an existing landline / business mobile, or let Meta provision a brand-new number.</p>
-<div class="shot"><svg viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Step 4 — Choose an existing number, or add new (Meta sends OTP)"><rect width="560" height="360" fill="#f8fafc"/><rect x="40" y="20" width="480" height="320" fill="#fff" stroke="#e5e7eb" rx="8"/><text x="60" y="55" font-family="Inter,Arial,sans-serif" font-size="14" fill="#0f172a" font-weight="700">Connect a WhatsApp Number</text><text x="60" y="80" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Pick or add a phone number to use with SmartCRM</text><rect x="60" y="105" width="440" height="50" fill="#f9fafb" stroke="#e5e7eb" rx="6"/><circle cx="85" cy="130" r="14" fill="#25D366"/><text x="85" y="135" font-family="Inter,Arial,sans-serif" font-size="13" fill="#fff" text-anchor="middle" font-weight="700">✓</text><text x="115" y="125" font-family="Inter,Arial,sans-serif" font-size="12" fill="#0f172a" font-weight="600">+91 98765 43210</text><text x="115" y="143" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Acme Sales · Verified</text><rect x="420" y="118" width="70" height="24" fill="#3b82f6" rx="4"/><text x="455" y="134" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Select</text><rect x="60" y="170" width="440" height="50" fill="#fff" stroke="#cbd5e1" stroke-dasharray="4,3" rx="6"/><text x="280" y="200" font-family="Inter,Arial,sans-serif" font-size="13" fill="#3b82f6" text-anchor="middle" font-weight="600">+ Add a new phone number</text><rect x="370" y="280" width="130" height="40" fill="#1877F2" rx="6"/><text x="435" y="306" font-family="Inter,Arial,sans-serif" font-size="13" fill="#fff" text-anchor="middle" font-weight="700">Continue →</text><rect x="420" y="115" width="70" height="30" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,3" rx="4"/><g transform="translate(500,130)"><rect x="0" y="-12" width="88" height="24" fill="#3b82f6" rx="3"/><text x="44" y="4" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Pick yours</text><polygon points="-6,0 0,-5 0,5" fill="#3b82f6"/></g></svg><div class="shot-cap">Step 4 — Choose an existing number, or add new (Meta sends OTP)</div></div>
+<div class="shot"><svg viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Step 4 — Choose an existing number, or add new (Meta sends OTP)"><rect width="560" height="360" fill="#f8fafc"/><rect x="40" y="20" width="480" height="320" fill="#fff" stroke="#e5e7eb" rx="8"/><text x="60" y="55" font-family="Inter,Arial,sans-serif" font-size="14" fill="#0f172a" font-weight="700">Connect a WhatsApp Number</text><text x="60" y="80" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Pick or add a phone number to use with NextEra Softlabs</text><rect x="60" y="105" width="440" height="50" fill="#f9fafb" stroke="#e5e7eb" rx="6"/><circle cx="85" cy="130" r="14" fill="#25D366"/><text x="85" y="135" font-family="Inter,Arial,sans-serif" font-size="13" fill="#fff" text-anchor="middle" font-weight="700">✓</text><text x="115" y="125" font-family="Inter,Arial,sans-serif" font-size="12" fill="#0f172a" font-weight="600">+91 98765 43210</text><text x="115" y="143" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b">Acme Sales · Verified</text><rect x="420" y="118" width="70" height="24" fill="#3b82f6" rx="4"/><text x="455" y="134" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Select</text><rect x="60" y="170" width="440" height="50" fill="#fff" stroke="#cbd5e1" stroke-dasharray="4,3" rx="6"/><text x="280" y="200" font-family="Inter,Arial,sans-serif" font-size="13" fill="#3b82f6" text-anchor="middle" font-weight="600">+ Add a new phone number</text><rect x="370" y="280" width="130" height="40" fill="#1877F2" rx="6"/><text x="435" y="306" font-family="Inter,Arial,sans-serif" font-size="13" fill="#fff" text-anchor="middle" font-weight="700">Continue →</text><rect x="420" y="115" width="70" height="30" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,3" rx="4"/><g transform="translate(500,130)"><rect x="0" y="-12" width="88" height="24" fill="#3b82f6" rx="3"/><text x="44" y="4" font-family="Inter,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">Pick yours</text><polygon points="-6,0 0,-5 0,5" fill="#3b82f6"/></g></svg><div class="shot-cap">Step 4 — Choose an existing number, or add new (Meta sends OTP)</div></div>
 <ul class="mini-steps">
 <li>If using an existing number, you'll get an OTP — voice call or SMS. Pick whichever can reach that number.</li>
 <li>The number must not currently be on the regular WhatsApp / WhatsApp Business app — unless you ticked <em>Coexistence mode</em> in step 2.</li>
@@ -1145,17 +1145,17 @@ Subscribe to <em>invitee.created</em>.
 <div class="troubleshoot"><strong>Stuck on OTP?</strong> Try the other option (voice instead of SMS, or vice versa). Indian carriers sometimes block international SMS from Meta.</div>
 </li>
 
-<li><strong>SmartCRM finishes the wiring automatically</strong>
-<p>The popup closes and SmartCRM auto-registers the webhook with Meta and saves the access token. No manual URL copying.</p>
-<div class="shot"><svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Done — SmartCRM auto-registers the webhook with Meta"><rect width="560" height="280" fill="#f8fafc"/><rect x="40" y="30" width="480" height="220" fill="#fff" stroke="#e5e7eb" rx="8"/><circle cx="280" cy="90" r="32" fill="#10b981"/><text x="280" y="100" font-family="Inter,Arial,sans-serif" font-size="32" fill="#fff" text-anchor="middle" font-weight="700">✓</text><text x="280" y="155" font-family="Inter,Arial,sans-serif" font-size="15" fill="#0f172a" text-anchor="middle" font-weight="700">WhatsApp connected!</text><text x="280" y="178" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b" text-anchor="middle">+91 98765 43210 · webhook subscribed · access token saved</text><rect x="200" y="200" width="160" height="34" fill="#3b82f6" rx="6"/><text x="280" y="223" font-family="Inter,Arial,sans-serif" font-size="12" fill="#fff" text-anchor="middle" font-weight="700">Send a test message</text></svg><div class="shot-cap">Done — SmartCRM auto-registers the webhook with Meta</div></div>
+<li><strong>NextEra Softlabs finishes the wiring automatically</strong>
+<p>The popup closes and NextEra Softlabs auto-registers the webhook with Meta and saves the access token. No manual URL copying.</p>
+<div class="shot"><svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Done — NextEra Softlabs auto-registers the webhook with Meta"><rect width="560" height="280" fill="#f8fafc"/><rect x="40" y="30" width="480" height="220" fill="#fff" stroke="#e5e7eb" rx="8"/><circle cx="280" cy="90" r="32" fill="#10b981"/><text x="280" y="100" font-family="Inter,Arial,sans-serif" font-size="32" fill="#fff" text-anchor="middle" font-weight="700">✓</text><text x="280" y="155" font-family="Inter,Arial,sans-serif" font-size="15" fill="#0f172a" text-anchor="middle" font-weight="700">WhatsApp connected!</text><text x="280" y="178" font-family="Inter,Arial,sans-serif" font-size="11" fill="#64748b" text-anchor="middle">+91 98765 43210 · webhook subscribed · access token saved</text><rect x="200" y="200" width="160" height="34" fill="#3b82f6" rx="6"/><text x="280" y="223" font-family="Inter,Arial,sans-serif" font-size="12" fill="#fff" text-anchor="middle" font-weight="700">Send a test message</text></svg><div class="shot-cap">Done — NextEra Softlabs auto-registers the webhook with Meta</div></div>
 <ul class="mini-steps">
 <li>You'll see a green check + your phone number + "webhook subscribed".</li>
-<li>SmartCRM also fetches any existing message templates you'd previously created in Meta.</li>
+<li>NextEra Softlabs also fetches any existing message templates you'd previously created in Meta.</li>
 </ul>
 </li>
 
 <li><strong>Send a test message</strong>
-<p>Open the <em>Chat</em> tab on the left sidebar. Type a phone number and a quick "Hello from SmartCRM 👋" and send. Within seconds the message lands on that phone.</p>
+<p>Open the <em>Chat</em> tab on the left sidebar. Type a phone number and a quick "Hello from NextEra Softlabs 👋" and send. Within seconds the message lands on that phone.</p>
 <ul class="mini-steps">
 <li>Use a number you can check on a real phone (yours or a colleague's).</li>
 <li>If the test message is the first contact, you have to use a pre-approved template — see section 23.</li>
@@ -1170,8 +1170,8 @@ Subscribe to <em>invitee.created</em>.
 <ol class="steps">
 <li><strong>In Meta Developer Console</strong> — create a WhatsApp Business app. Grab <code>Phone Number ID</code>, <code>WhatsApp Business Account ID</code>, and a permanent <code>Access Token</code> (System User token, never expires).</li>
 <li><strong>Set the webhook URL</strong> to <code>https://crm.smartcrmsolution.com/t/&lt;your-slug&gt;/hook/whatsapp_webhook</code>. Subscribe to <em>messages</em>.</li>
-<li><strong>Set the verify token</strong> to any string. Paste the same value into SmartCRM → Settings → WhatsApp → Verify token.</li>
-<li><strong>Paste the access token + phone number ID</strong> into SmartCRM Settings → WhatsApp.</li>
+<li><strong>Set the verify token</strong> to any string. Paste the same value into NextEra Softlabs → Settings → WhatsApp → Verify token.</li>
+<li><strong>Paste the access token + phone number ID</strong> into NextEra Softlabs Settings → WhatsApp.</li>
 <li><strong>Save and verify.</strong> Send yourself a test message.</li>
 </ol>
 
@@ -1179,7 +1179,7 @@ Subscribe to <em>invitee.created</em>.
 
 <article class="section" id="whatsapp-coexistence" data-keywords="coexistence whatsapp app phone existing ongoing keep mobile shared">
 <h2><span class="num">21</span>🤝 WhatsApp Coexistence mode</h2>
-<p class="lede">Keep using the WhatsApp Business app on your phone <em>and</em> the SmartCRM web inbox on the same number — at the same time.</p>
+<p class="lede">Keep using the WhatsApp Business app on your phone <em>and</em> the NextEra Softlabs web inbox on the same number — at the same time.</p>
 
 <h3>When to use it</h3>
 <ul class="mini-steps">
@@ -1191,13 +1191,13 @@ Subscribe to <em>invitee.created</em>.
 <h3>How to enable</h3>
 <ol class="steps">
 <li><strong>Start the embedded sign-in flow</strong> from Settings → WhatsApp (see section 20).</li>
-<li><strong>Tick "Coexistence mode"</strong> in the SmartCRM popup BEFORE clicking the Facebook button.
+<li><strong>Tick "Coexistence mode"</strong> in the NextEra Softlabs popup BEFORE clicking the Facebook button.
 <ul class="mini-steps">
 <li>If you forget, you'll have to disconnect and re-run the flow.</li>
 </ul>
 </li>
 <li><strong>Approve in Facebook.</strong> Meta shows a different consent screen for coexistence — read the differences carefully.</li>
-<li><strong>Both surfaces are live.</strong> Phone reply → shows in SmartCRM. SmartCRM reply → pops up on the phone. Push notifications keep working on the phone as before.</li>
+<li><strong>Both surfaces are live.</strong> Phone reply → shows in NextEra Softlabs. NextEra Softlabs reply → pops up on the phone. Push notifications keep working on the phone as before.</li>
 </ol>
 
 <div class="callout callout-warn">
@@ -1230,7 +1230,7 @@ Subscribe to <em>invitee.created</em>.
 <ul class="mini-steps">
 <li>Sales reps → set default to your sales number.</li>
 <li>Support reps → set default to your support number.</li>
-<li>Leave blank → SmartCRM picks the number the conversation arrived on.</li>
+<li>Leave blank → NextEra Softlabs picks the number the conversation arrived on.</li>
 </ul>
 </li>
 
@@ -1297,7 +1297,7 @@ Subscribe to <em>invitee.created</em>.
 
 <div class="callout callout-warn">
 <span class="callout-icon">⚠️</span>
-<div><strong>Error 132001 ("template not found")?</strong> Meta cached an old version. Click <em>Refresh templates</em> on the Templates tab — SmartCRM auto-refetches all approved templates from your WABA and retries.</div>
+<div><strong>Error 132001 ("template not found")?</strong> Meta cached an old version. Click <em>Refresh templates</em> on the Templates tab — NextEra Softlabs auto-refetches all approved templates from your WABA and retries.</div>
 </div>
 </article>
 
@@ -1510,7 +1510,7 @@ What's your preferred date?</code></pre>
 <h2><span class="num">28</span>🔔 Mobile push notifications</h2>
 <p class="lede">Banner + sound + vibration on the phone <em>even when the app is closed.</em></p>
 <ol class="steps">
-<li><strong>Install the SmartCRM Android app.</strong> Settings → Get app → scan the QR or tap the link to download the APK. Install it (<em>Install from unknown sources</em> — first time only).</li>
+<li><strong>Install the NextEra Softlabs Android app.</strong> Settings → Get app → scan the QR or tap the link to download the APK. Install it (<em>Install from unknown sources</em> — first time only).</li>
 <li><strong>Log in.</strong> Same email + password as the web. The app silently registers an FCM token in the background.</li>
 <li><strong>Allow notifications.</strong> First launch: Android shows a permission prompt. Tap <em>Allow</em>.</li>
 <li><strong>Test it.</strong> On the web, ask a manager to assign you a new lead — within 1–2 seconds your phone should buzz with a banner.</li>
@@ -1556,7 +1556,7 @@ What's your preferred date?</code></pre>
 <p class="lede">Phone recordings show up against the matching lead automatically.</p>
 <ol class="steps">
 <li><strong>Turn on call recording on your phone.</strong> Each phone OEM does it slightly differently — Samsung's auto-record, Pixel's per-call toggle, etc.</li>
-<li><strong>Open the SmartCRM Android app at least once a day.</strong> The app syncs recordings in the background — when you open it, fresh recordings get uploaded.</li>
+<li><strong>Open the NextEra Softlabs Android app at least once a day.</strong> The app syncs recordings in the background — when you open it, fresh recordings get uploaded.</li>
 <li><strong>What gets matched:</strong>
 <ul style="margin: .35rem 0 .35rem 1.1rem; padding: 0;">
 <li>Recording filenames with phone numbers — matched to lead by phone (with country-code-tolerant fuzzy match).</li>
@@ -1570,7 +1570,7 @@ What's your preferred date?</code></pre>
 
 <article class="section" id="theme" data-keywords="theme color brand customize logo dark mode appearance ui">
 <h2><span class="num">31</span>🎨 Theme &amp; branding</h2>
-<p class="lede">Make SmartCRM look like yours.</p>
+<p class="lede">Make NextEra Softlabs look like yours.</p>
 <ol class="steps">
 <li><strong>Settings → Company.</strong> Upload logo (PNG with transparent background works best, max 1 MB). Set the company name.</li>
 <li><strong>Pick brand colour.</strong> A single colour drives the active state, links, buttons, and the Android app icon background. Use your hex value or pick from the swatch.</li>
@@ -1843,7 +1843,7 @@ What's your preferred date?</code></pre>
 
 <article class="section" id="tickets" data-keywords="tickets support help internal customer issue priority status sla escalation">
 <h2><span class="num">38</span>🎫 Support Tickets</h2>
-<p class="lede">An internal tickets system — your team raises issues with SmartCRM support, and we reply inside the CRM (no email chasing).</p>
+<p class="lede">An internal tickets system — your team raises issues with NextEra Softlabs support, and we reply inside the CRM (no email chasing).</p>
 
 <h3>How it works</h3>
 <ol class="steps">
@@ -1864,12 +1864,12 @@ What's your preferred date?</code></pre>
 </li>
 
 <li><strong>Submit</strong>
-<p>The ticket lands in the smartcrm-saas super-admin queue. You get an email confirmation. SmartCRM support replies inside the ticket thread.</p>
+<p>The ticket lands in the smartcrm-saas super-admin queue. You get an email confirmation. NextEra Softlabs support replies inside the ticket thread.</p>
 <div class="callout callout-info"><span class="callout-icon">ℹ️</span><div><strong>Reply SLA:</strong> Normal — within 1 working day. High — within 4 hours. Critical — within 30 minutes during business hours (9am–9pm IST).</div></div>
 </li>
 
 <li><strong>Continue the conversation inside the ticket</strong>
-<p>When SmartCRM support replies, the ticket goes to <em>REPLIED</em> and you get an email + in-app notification. Reply by opening the ticket and typing in the message box — same as a chat.</p>
+<p>When NextEra Softlabs support replies, the ticket goes to <em>REPLIED</em> and you get an email + in-app notification. Reply by opening the ticket and typing in the message box — same as a chat.</p>
 </li>
 
 </ol>
@@ -1893,7 +1893,7 @@ What's your preferred date?</code></pre>
 <tr><td><strong>WhatsApp not sending</strong></td><td>Check Settings → WhatsApp → access token + phone-number ID still valid (Embedded Sign-In tokens occasionally expire if the FB user revokes consent). Reconnect to refresh.</td></tr>
 <tr><td><strong>AI Bot not replying</strong></td><td>Three checks: (1) Bot Settings → Enabled. (2) Bot Activity tab will show <em>suppressed</em> reasons (off-keywords, after-hours, human-active). (3) Settings → SMTP / Gemini key — under super-admin, confirm the global Gemini key is active.</td></tr>
 <tr><td><strong>Push notifications not arriving on phone</strong></td><td>Reinstall the APK. New install registers a fresh FCM token. Old tokens auto-evict from our DB after a delivery failure, but the OS keeps them cached — a clean install fixes 95% of cases.</td></tr>
-<tr><td><strong>Attendance check-in fails with location error</strong></td><td>Phone Settings → Apps → SmartCRM → Permissions → Location → Allow → reopen the app. (Yes, this is required — we won't let employees fake their location by skipping GPS.)</td></tr>
+<tr><td><strong>Attendance check-in fails with location error</strong></td><td>Phone Settings → Apps → NextEra Softlabs → Permissions → Location → Allow → reopen the app. (Yes, this is required — we won't let employees fake their location by skipping GPS.)</td></tr>
 <tr><td><strong>Pabbly mapping shows the right value but lead arrives empty</strong></td><td>You probably dragged the labelled chip ("1. Res1 Campaign Name : value") instead of just the value chip. Re-drag in Pabbly using the inner value tag.</td></tr>
 <tr><td><strong>Need help we haven't covered?</strong></td><td>Email <a href="mailto:support@smartcrmsolution.com">support@smartcrmsolution.com</a> with your workspace slug + a short description.</td></tr>
 </table>

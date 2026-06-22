@@ -31,7 +31,7 @@ function renderQuotationPdf({ quotation: q, items, brand }) {
   brand = brand || {};
   items = items || [];
   const cur = q.currency || 'INR';
-  const company = brand.COMPANY_NAME || 'SmartCRM';
+  const company = brand.COMPANY_NAME || 'NextEra Softlabs';
 
   const doc = new PDFDocument({
     size: 'A4',
@@ -44,7 +44,7 @@ function renderQuotationPdf({ quotation: q, items, brand }) {
   });
 
   // ─── HEADER STRIP ─────────────────────────────────────────────
-  doc.rect(0, 0, doc.page.width, 90).fill('#4F46E5');     // SmartCRM indigo bar
+  doc.rect(0, 0, doc.page.width, 90).fill('#4F46E5');     // NextEra Softlabs indigo bar
   doc.fillColor('#FFFFFF').fontSize(22).font('Helvetica-Bold')
      .text(company, 40, 28, { width: doc.page.width - 80 });
 

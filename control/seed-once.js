@@ -75,7 +75,7 @@ const DEFAULT_SETTINGS = {
   INSTANCE_PENDING_DELETION_DAYS: '30',
   TRIAL_DAYS_DEFAULT: '7',
   // Brand / public copy
-  PLATFORM_NAME: 'SmartCRM',
+  PLATFORM_NAME: 'NextEra Softlabs',
   PLATFORM_TAGLINE: 'The CRM your sales team will actually use',
   PLATFORM_HERO_SUBHEAD: 'Capture leads from Facebook, IndiaMart, Google Ads & your website. Auto-dial, AI call summaries, WhatsApp at scale, and follow-up reminders that never let a deal slip — all in one place.',
   PLATFORM_PRIMARY_COLOR: '#10b981',
@@ -89,7 +89,7 @@ const DEFAULT_SETTINGS = {
   MAIL_ENCRYPTION: 'TLS',
   SMTP_HOST: 'smtp.gmail.com',
   SMTP_PORT: '587',
-  MAIL_FROM_NAME: 'SmartCRM',
+  MAIL_FROM_NAME: 'NextEra Softlabs',
   MAIL_CHARSET: 'utf-8'
 };
 

@@ -434,7 +434,7 @@ async function _sendCrmStageChange(s, lead, statusId, when) {
     event_time: Math.floor(eventTime.getTime() / 1000),
     event_id: eventId,
     action_source: 'system_generated',
-    lead_event_source: 'SmartCRM',
+    lead_event_source: 'NextEra Softlabs',
     user_data: { lead_id: String(leadgenId) },
     custom_data: { lead_event_stage: String(stage).toLowerCase() }
   };

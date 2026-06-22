@@ -2,7 +2,7 @@
  * WL_BILLING_v1 — White-Label Customer billing (super-admin module).
  *
  * Customers here are AGENCIES who bought the white-label CRM from
- * SmartCRM Solution. They are NOT tenants. This module lives entirely
+ * NextEra Softlabs Solution. They are NOT tenants. This module lives entirely
  * in the control DB.
  *
  * Schema: wl_customers, wl_invoices, wl_payments, wl_wa_log.
@@ -111,7 +111,7 @@ async function api_saas_wl_customers_save(token, payload) {
     contact_name:   String(p.contact_name || '').trim() || null,
     phone:          String(p.phone).replace(/[^\d+]/g, ''),
     email:          p.email ? String(p.email).trim() : null,
-    product_name:   p.product_name || 'SmartCRM White Label',
+    product_name:   p.product_name || 'NextEra Softlabs White Label',
     total_users:    Math.max(0, Number(p.total_users) || 0),
     monthly_amount: Math.max(0, Number(p.monthly_amount) || 0),
     total_paid:     Math.max(0, Number(p.total_paid) || 0),
@@ -251,7 +251,7 @@ function _buildInvoiceMessage({ c, inv, portalUrl, kind }) {
              : kind === 'thanks'   ? '🎉 *Payment Received*'
              : '🧾 *New Invoice*';
   if (kind === 'thanks') {
-    return `${tag}\n\nHi ${c.contact_name || c.company_name},\n\nWe've received your payment of ₹${amt} for ${inv.invoice_no}. Thank you!\n\nYour current balance: ₹${Number(c.balance).toFixed(2)}\n\n— SmartCRM Solution`;
+    return `${tag}\n\nHi ${c.contact_name || c.company_name},\n\nWe've received your payment of ₹${amt} for ${inv.invoice_no}. Thank you!\n\nYour current balance: ₹${Number(c.balance).toFixed(2)}\n\n— NextEra Softlabs Solution`;
   }
   const lines = [
     tag,
@@ -266,7 +266,7 @@ function _buildInvoiceMessage({ c, inv, portalUrl, kind }) {
     `View invoice & pay online:`,
     portalUrl,
     '',
-    '— SmartCRM Solution'
+    '— NextEra Softlabs Solution'
   ].filter(Boolean);
   return lines.join('\n');
 }

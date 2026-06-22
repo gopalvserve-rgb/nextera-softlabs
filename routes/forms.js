@@ -385,7 +385,7 @@ button[type=submit]:disabled { opacity: .55; cursor: progress; }
     </form>
     <div id="ok" class="ok" style="display:none">${_esc(form.success_message || 'Thank you!')}</div>
   </div>
-  <div class="footer">Powered by SmartCRM</div>
+  <div class="footer">Powered by NextEra Softlabs</div>
 </div>
 <script>
 (function(){

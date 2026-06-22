@@ -37,7 +37,7 @@ const SETTING_KEYS = [
     kind: 'number', hint: '587 for TLS · 465 for SSL · 25 for none' },
   { key: 'MAIL_FROM_EMAIL',    group: 'email',     label: 'Email (from address)',      mask: false },
   { key: 'MAIL_FROM_NAME',     group: 'email',     label: 'From name',                 mask: false,
-    hint: 'Shown in the recipient\'s inbox, e.g. "SmartCRM"' },
+    hint: 'Shown in the recipient\'s inbox, e.g. "NextEra Softlabs"' },
   { key: 'SMTP_USERNAME',      group: 'email',     label: 'SMTP Username',             mask: false,
     hint: 'For Gmail, this is the same as your Google address.' },
   { key: 'SMTP_PASSWORD',      group: 'email',     label: 'SMTP Password',             mask: true,

@@ -234,7 +234,7 @@ async function api_password_forgot(_token, email) {
   // Send via super-admin global SMTP via utils/mailer.
   try {
     const mailer = require('../utils/mailer');
-    const brand = await db.getConfig('COMPANY_NAME', '').catch(() => '') || 'SmartCRM';
+    const brand = await db.getConfig('COMPANY_NAME', '').catch(() => '') || 'NextEra Softlabs';
     const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
       <h2 style="color:#4f46e5;margin:0 0 16px">Reset your password</h2>
       <p>Hi ${user.name || ''},</p>

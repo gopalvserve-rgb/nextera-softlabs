@@ -99,7 +99,7 @@ const INDUSTRY_SHOWCASES = {
     pack: 'ecommerce'
   }
 };
-const DEMO_ORG_NAME = 'SmartCRM Showcase Co.';
+const DEMO_ORG_NAME = 'NextEra Softlabs Showcase Co.';
 
 // ---- Demo data dictionaries ------------------------------------------------
 
@@ -197,7 +197,7 @@ const DEMO_REMARKS = [
 
 const DEMO_TRANSCRIPTS = [
   {
-    transcript: 'Agent: Hi, this is Priya from SmartCRM. Is this a good time?\nLead: Yes, but only 5 minutes.\nAgent: I\'ll be quick. We help sales teams automate follow-ups. What\'s your team size?\nLead: We have 12 sales people. Currently using Excel.\nAgent: Got it. Most teams your size save 8-10 hours a week with us.\nLead: Send me a deck please.',
+    transcript: 'Agent: Hi, this is Priya from NextEra Softlabs. Is this a good time?\nLead: Yes, but only 5 minutes.\nAgent: I\'ll be quick. We help sales teams automate follow-ups. What\'s your team size?\nLead: We have 12 sales people. Currently using Excel.\nAgent: Got it. Most teams your size save 8-10 hours a week with us.\nLead: Send me a deck please.',
     summary: 'Initial discovery call. Lead has 12 salespeople using Excel. Showed interest after hearing time-saving stat. Asked for a deck.',
     action_items: '1. Email pitch deck within 24 hours\n2. Schedule 30-min demo for next week\n3. Add to nurture sequence',
     sentiment: 'positive',
@@ -219,7 +219,7 @@ const DEMO_TRANSCRIPTS = [
     rating_notes: 'Excellent recovery from a complaint into a near-close.'
   },
   {
-    transcript: 'Agent: Hi! I\'m calling from SmartCRM, are you free?\nLead: Not really. What\'s this about?\nAgent: Just 30 seconds. We help with lead management.\nLead: I\'m not interested.\nAgent: No problem. Can I send you something to look at later?\nLead: Sure, fine.',
+    transcript: 'Agent: Hi! I\'m calling from NextEra Softlabs, are you free?\nLead: Not really. What\'s this about?\nAgent: Just 30 seconds. We help with lead management.\nLead: I\'m not interested.\nAgent: No problem. Can I send you something to look at later?\nLead: Sure, fine.',
     summary: 'Brush-off. Lead not engaged, agreed to email but no real interest signaled.',
     action_items: '1. Send a soft-touch one-pager\n2. Mark as cold, requeue in 60 days',
     sentiment: 'negative',
@@ -855,13 +855,13 @@ async function _wipeAndSeed(pool, adminUserId) {
   try {
     await pool.query(
       `INSERT INTO wa_phones (phone_number_id, business_account_id, access_token, display_phone_number, verified_name, label, quality_rating, status, messaging_limit_tier, is_default, is_active, created_at)
-       VALUES ($1, 'demo_waba_1', 'DEMO_TOKEN_NOT_REAL', '+91 99988 77766', 'SmartCRM Demo', 'Sales Line', 'GREEN', 'CONNECTED', 'TIER_10K', 1, 1, NOW())
+       VALUES ($1, 'demo_waba_1', 'DEMO_TOKEN_NOT_REAL', '+91 99988 77766', 'NextEra Softlabs Demo', 'Sales Line', 'GREEN', 'CONNECTED', 'TIER_10K', 1, 1, NOW())
        ON CONFLICT (phone_number_id) DO UPDATE SET label = EXCLUDED.label, is_active = 1`,
       [_phoneA]
     );
     await pool.query(
       `INSERT INTO wa_phones (phone_number_id, business_account_id, access_token, display_phone_number, verified_name, label, quality_rating, status, messaging_limit_tier, is_default, is_active, created_at)
-       VALUES ($1, 'demo_waba_1', 'DEMO_TOKEN_NOT_REAL', '+91 88877 66655', 'SmartCRM Demo', 'Support Line', 'GREEN', 'CONNECTED', 'TIER_1K', 0, 1, NOW())
+       VALUES ($1, 'demo_waba_1', 'DEMO_TOKEN_NOT_REAL', '+91 88877 66655', 'NextEra Softlabs Demo', 'Support Line', 'GREEN', 'CONNECTED', 'TIER_1K', 0, 1, NOW())
        ON CONFLICT (phone_number_id) DO UPDATE SET label = EXCLUDED.label, is_active = 1`,
       [_phoneB]
     );
@@ -876,7 +876,7 @@ async function _wipeAndSeed(pool, adminUserId) {
     );
     await pool.query(
       `INSERT INTO ai_kb_documents (source_type, title, raw_text, is_active, ingest_status, phone_number_id, created_by, created_at)
-       VALUES ('text', 'Product overview', 'SmartCRM is an AI-powered CRM with WhatsApp engagement, real-time lead heat scoring, multi-bot architecture, and integrated call recording. Built for India-first sales teams.', 1, 'ready', NULL, $1, NOW())`,
+       VALUES ('text', 'Product overview', 'NextEra Softlabs is an AI-powered CRM with WhatsApp engagement, real-time lead heat scoring, multi-bot architecture, and integrated call recording. Built for India-first sales teams.', 1, 'ready', NULL, $1, NOW())`,
       [adminUserId]
     );
     await pool.query(
@@ -934,7 +934,7 @@ async function _wipeAndSeed(pool, adminUserId) {
     // Support — Samsung recording (resolved)
     { phone: _phoneB, kind: 'cold', signal: 'support resolved', score: 0, msgs: [
       { dir: 'in',  body: 'Hi, my recordings are not syncing on Samsung phone' },
-      { dir: 'out', body: 'Sorry to hear that! Quick check: open SmartCRM app → Settings → Recording sync → tap Sync now. Does it list any files?', bot: true },
+      { dir: 'out', body: 'Sorry to hear that! Quick check: open NextEra Softlabs app → Settings → Recording sync → tap Sync now. Does it list any files?', bot: true },
       { dir: 'in',  body: 'It says permission denied' },
       { dir: 'out', body: 'Got it. Long-press the app icon → App info → Permissions → enable Storage. Then retry the sync.', bot: true },
       { dir: 'in',  body: 'Working now! Thanks 🙏' }
@@ -1028,7 +1028,7 @@ async function _wipeAndSeed(pool, adminUserId) {
   // ---- 12. Welcome announcement
   await pool.query(
     `INSERT INTO announcements (title, body, severity, is_active, is_dismissible, created_by, created_at)
-     VALUES ('👋 Welcome to the SmartCRM Showcase!',
+     VALUES ('👋 Welcome to the NextEra Softlabs Showcase!',
              'This is a demo workspace pre-loaded with sample data. Click the "📚 Take the tour" button (bottom-right) for a quick walkthrough.',
              'success', 1, 1, $1, NOW())`,
     [adminUserId]

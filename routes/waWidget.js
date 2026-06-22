@@ -188,7 +188,7 @@ function _buildSnippet(baseUrl, tenantSlug, slug) {
   const base = (baseUrl || '').replace(/\/+$/, '');
   const tpath = tenantSlug ? '/t/' + tenantSlug : '';
   const src = `${base}${tpath}/widget/wa.js?w=${encodeURIComponent(slug)}`;
-  return `<!-- SmartCRM WhatsApp Chat Widget -->\n<script src="${src}" async></script>`;
+  return `<!-- NextEra Softlabs WhatsApp Chat Widget -->\n<script src="${src}" async></script>`;
 }
 
 async function api_waWidget_snippet(token, payload) {
@@ -210,11 +210,11 @@ async function expressRenderWidgetJs(req, res) {
   try {
     await _ensureSchema();
     const slug = String((req.query && req.query.w) || '').trim();
-    if (!slug) return res.status(400).type('application/javascript').send('/* SmartCRM widget: missing ?w=<slug> */');
+    if (!slug) return res.status(400).type('application/javascript').send('/* NextEra Softlabs widget: missing ?w=<slug> */');
 
     const w = (await db.query(`SELECT * FROM wa_widgets WHERE slug = $1`, [slug])).rows[0];
     if (!w || !Number(w.is_active)) {
-      return res.status(200).type('application/javascript').send('/* SmartCRM widget: not found or disabled */');
+      return res.status(200).type('application/javascript').send('/* NextEra Softlabs widget: not found or disabled */');
     }
 
     try { await db.query(`UPDATE wa_widgets SET view_count = view_count + 1 WHERE id = $1`, [w.id]); } catch (_) {}
@@ -222,7 +222,7 @@ async function expressRenderWidgetJs(req, res) {
     const tenantSlug = req.tenantSlug || (req.tenant && req.tenant.slug) || '';
     const trackUrl = (tenantSlug ? '/t/' + tenantSlug : '') + '/widget/click';
 
-    const js = `/* SmartCRM WhatsApp Chat Widget — slug=${_jsEsc(w.slug)} */
+    const js = `/* NextEra Softlabs WhatsApp Chat Widget — slug=${_jsEsc(w.slug)} */
 (function(){
   if (window.__smartcrmWaWidget && window.__smartcrmWaWidget['${_jsEsc(w.slug)}']) return;
   window.__smartcrmWaWidget = window.__smartcrmWaWidget || {};
@@ -322,7 +322,7 @@ async function expressRenderWidgetJs(req, res) {
     go.onclick = openWa;
     foot.appendChild(go);
     panel.appendChild(foot);
-    var brand = el('div', { style:'padding:6px 0 8px;text-align:center;font-size:10.5px;color:#94a3b8;background:#fff;' }, ['Powered by SmartCRM']);
+    var brand = el('div', { style:'padding:6px 0 8px;text-align:center;font-size:10.5px;color:#94a3b8;background:#fff;' }, ['Powered by NextEra Softlabs']);
     panel.appendChild(brand);
     fab.onclick = function(){
       if (panel.style.display === 'block') { panel.style.display='none'; return; }
@@ -350,7 +350,7 @@ async function expressRenderWidgetJs(req, res) {
     res.type('application/javascript').send(js);
   } catch (e) {
     console.error('[/widget/wa.js]', e);
-    res.status(500).type('application/javascript').send('/* SmartCRM widget error */');
+    res.status(500).type('application/javascript').send('/* NextEra Softlabs widget error */');
   }
 }
 
