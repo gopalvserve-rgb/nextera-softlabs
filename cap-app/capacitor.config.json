@@ -3,13 +3,13 @@
   "appName": "Lead CRM",
   "webDir": "www",
   "server": {
-    "url": "https://crm.smartcrmsolution.com/app",
+    "url": "https://crm.nexterasoftlabs.com/app",
     "cleartext": false,
     "androidScheme": "https",
     "iosScheme": "https",
     "allowNavigation": [
-      "crm.smartcrmsolution.com",
-      "*.smartcrmsolution.com",
+      "crm.nexterasoftlabs.com",
+      "*.nexterasoftlabs.com",
       "tel:*",
       "mailto:*",
       "whatsapp:*"

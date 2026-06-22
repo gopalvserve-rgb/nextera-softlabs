@@ -134,7 +134,7 @@
       </form>
     </div>
 
-    <p class="help">Don't have a workspace yet? <a href="https://crm.smartcrmsolution.com" id="signup-link">Sign up</a></p>
+    <p class="help">Don't have a workspace yet? <a href="/" id="signup-link">Sign up</a></p>
   </div>
 
   <script>
@@ -159,7 +159,7 @@
 
       function gotoWorkspace(slug) {
         // Use replace so the picker isn't kept in WebView history.
-        window.location.replace('https://crm.smartcrmsolution.com/t/' + encodeURIComponent(slug) + '/');
+        window.location.replace(location.origin + '/t/' + encodeURIComponent(slug) + '/');
       }
 
       function showSavedState(slug) {

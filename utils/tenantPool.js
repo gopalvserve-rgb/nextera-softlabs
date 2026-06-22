@@ -85,8 +85,16 @@ function _tenantUrl(dbName) {
 function poolFor(tenant) {
   if (!tenant || !tenant.db_name) return null;
   if (_pools.has(tenant.db_name)) {
-    _poolLastUsed.set(tenant.db_name, Date.now());
-    return _pools.get(tenant.db_name);
+    const existing = _pools.get(tenant.db_name);
+    // POOL_ENDED_HEAL_v1 — a cached pool can get .end()'d by LRU eviction
+    // racing an in-flight request (or by removeTenant). Reusing it throws
+    // "Cannot use a pool after calling end on the pool". Detect + recreate.
+    if (existing && !existing.ended && !existing.ending) {
+      _poolLastUsed.set(tenant.db_name, Date.now());
+      return existing;
+    }
+    _pools.delete(tenant.db_name);
+    _poolLastUsed.delete(tenant.db_name);
   }
   const url = _tenantUrl(tenant.db_name);
   const p = new Pool({
