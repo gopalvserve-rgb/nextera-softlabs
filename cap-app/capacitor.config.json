@@ -1,6 +1,6 @@
 {
   "appId": "app.leadcrm.mobile",
-  "appName": "Lead CRM",
+  "appName": "NextEra Softlabs",
   "webDir": "www",
   "server": {
     "url": "https://crm.nexterasoftlabs.com/app",

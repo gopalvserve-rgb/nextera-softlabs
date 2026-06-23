@@ -1,5 +1,5 @@
 /**
- * SmartCRM SaaS Ã¢ÂÂ single-process multi-tenant server.
+ * NextEra Softlabs SaaS Ã¢ÂÂ single-process multi-tenant server.
  *
  * URL surface:
  *   GET  /                           Ã¢ÂÂ public landing + pricing
@@ -756,7 +756,7 @@ function _apiDocsHtml(host) {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SmartCRM API Documentation</title>
+<title>NextEra Softlabs API Documentation</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
@@ -794,8 +794,8 @@ function _apiDocsHtml(host) {
 <body>
 <div class="header">
   <div class="container" style="padding-top:0;padding-bottom:0">
-    <h1>SmartCRM API</h1>
-    <p>Webhook &amp; integration endpoints for your SmartCRM workspace</p>
+    <h1>NextEra Softlabs API</h1>
+    <p>Webhook &amp; integration endpoints for your NextEra Softlabs workspace</p>
     <p style="color:#475569;font-size:.85rem;margin-top:.5rem">Base URL: <code style="color:#38bdf8">${safe(host)}</code></p>
   </div>
 </div>
@@ -821,7 +821,7 @@ function _apiDocsHtml(host) {
     <span class="url">/hook/website</span>
     <span class="badge badge-auth">API Key required</span>
   </div>
-  <p style="color:#94a3b8;margin-bottom:1rem">Accepts a lead submission from your website contact form. Creates or updates a lead in your SmartCRM workspace.</p>
+  <p style="color:#94a3b8;margin-bottom:1rem">Accepts a lead submission from your website contact form. Creates or updates a lead in your NextEra Softlabs workspace.</p>
 
   <h3>Built-in fields (no setup required)</h3>
   <table>
@@ -3187,7 +3187,7 @@ function _renderTenantPlaceholder(req, res, slug, tenant) {
   if (!tenant) {
     return res.status(404).type('html').send(`<!doctype html><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Workspace not found - SmartCRM</title>
+<title>Workspace not found - NextEra Softlabs</title>
 <style>body{font-family:system-ui,sans-serif;max-width:560px;margin:3rem auto;padding:0 1rem;color:#0f172a}
 .card{background:#fef2f2;border:1px solid #fecaca;padding:1.5rem;border-radius:12px;margin-bottom:1rem}
 code{background:#fff;padding:.2rem .4rem;border-radius:4px}
@@ -3201,7 +3201,7 @@ a{color:#4338ca;text-decoration:none}
 </div>
 <p style="color:#475569;margin-bottom:.4rem">Pick a different workspace, or go to the home page:</p>
 <a href="/app?stay=1" class="btn btn-primary">Choose a different workspace</a>
-<a href="/" class="btn btn-ghost">Back to SmartCRM home</a>
+<a href="/" class="btn btn-ghost">Back to NextEra Softlabs home</a>
 <script>
   // Clear the saved slug so the picker doesn't auto-redirect right back here.
   try { localStorage.removeItem('tenant_slug'); } catch (e) {}
@@ -3211,7 +3211,7 @@ a{color:#4338ca;text-decoration:none}
   }
   const t = tenant;
   res.type('html').send(`<!doctype html><meta charset="utf-8"/>
-<title>${safe(t.org_name)} Ã¢ÂÂ SmartCRM</title>
+<title>${safe(t.org_name)} Ã¢ÂÂ NextEra Softlabs</title>
 <style>body{font-family:system-ui,sans-serif;max-width:640px;margin:4rem auto;padding:0 1.25rem;color:#0f172a;line-height:1.55}
 .card{background:#ecfdf5;border:1px solid #6ee7b7;padding:1.5rem;border-radius:12px;margin:1.5rem 0}
 .warn{background:#fef9c3;border-color:#facc15}
@@ -3229,7 +3229,7 @@ ${ssl ? `<div class="card" style="background:#dbeafe;border-color:#60a5fa;color:
   <div class="row"><span class="lbl">Token expires</span> ${new Date(ssl.exp * 1000).toISOString().replace('T', ' ').slice(0, 19)} UTC</div>
 </div>` : ''}
 <h1>Ã°ÂÂÂ Welcome to ${safe(t.org_name)}</h1>
-<p>Your SmartCRM workspace is registered.</p>
+<p>Your NextEra Softlabs workspace is registered.</p>
 <div class="card">
   <h2>Workspace details</h2>
   <div class="row"><span class="lbl">URL</span> <code>/t/${safe(t.slug)}</code></div>
@@ -3239,8 +3239,8 @@ ${ssl ? `<div class="card" style="background:#dbeafe;border-color:#60a5fa;color:
 </div>
 <div class="card warn">
   <h2>Tenant CRM is still being wired up</h2>
-  <p>The full SmartCRM workspace UI (leads, calls, WhatsApp, reports) is in the next deployment phase Ã¢ÂÂ the per-tenant DB has been provisioned, but the SPA isn't mounted under <code>/t/&lt;slug&gt;</code> yet.</p>
-  <p>If you're the platform admin you can manage this tenant from the <a href="/admin/#/tenants">SmartCRM admin panel</a>.</p>
+  <p>The full NextEra Softlabs workspace UI (leads, calls, WhatsApp, reports) is in the next deployment phase Ã¢ÂÂ the per-tenant DB has been provisioned, but the SPA isn't mounted under <code>/t/&lt;slug&gt;</code> yet.</p>
+  <p>If you're the platform admin you can manage this tenant from the <a href="/admin/#/tenants">NextEra Softlabs admin panel</a>.</p>
 </div>
 <p style="color:#94a3b8;font-size:.85rem;margin-top:2rem">Need help? Email <a href="mailto:support@smartcrmsolution.com">support@smartcrmsolution.com</a></p>`);
 }
@@ -4417,7 +4417,7 @@ setTimeout(() => _runCallLast48hCleanup().catch(() => {}), 300_000);
 
 
   app.listen(PORT, () => {
-    console.log('[boot] SmartCRM SaaS listening on :' + PORT);
+    console.log('[boot] NextEra Softlabs SaaS listening on :' + PORT);
     // COPILOT_v4 — one-shot enable on vserve. Idempotent, non-blocking.
     try {
       const { autoEnableOnVserve } = require('./utils/cp4VserveAutoEnable');
