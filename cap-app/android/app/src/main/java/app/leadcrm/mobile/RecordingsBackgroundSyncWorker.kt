@@ -52,7 +52,7 @@ import java.net.URL
  *
  * Stored prefs (set by MainActivity / JS-side):
  *   - rec_folder_uri   : SAF tree Uri of the recordings folder
- *   - rec_bg_base_url  : CRM base URL (e.g. https://crm.smartcrmsolution.com/t/vserve)
+ *   - rec_bg_base_url  : CRM base URL (e.g. https://crm.nexterasoftlabs.com/t/vserve)
  *   - rec_bg_token     : x-auth-token
  *   - rec_bg_last_sync : ms epoch of last successful run (we sweep files modified after this)
  *   - rec_bg_uploaded  : JSON object { "file_uri": ts } to avoid re-uploads
@@ -215,7 +215,7 @@ class RecordingsBackgroundSyncWorker(
         // we know is hard-coded (lets us diagnose freshly-installed devices
         // with no creds at all).
         val rawBase = baseUrl?.trimEnd('/')?.takeIf { it.isNotEmpty() }
-            ?: "https://crm.smartcrmsolution.com"
+            ?: "https://crm.nexterasoftlabs.com"
         // Strip /t/<slug>/ since /api/rec-diag is tenant-agnostic.
         val baseClean = rawBase.replace(Regex("/t/[^/]+/?$"), "")
         Thread {

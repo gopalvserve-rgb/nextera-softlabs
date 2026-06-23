@@ -420,7 +420,7 @@ public class MainActivity extends BridgeActivity {
                 try {
                     String full = url;
                     if (full.startsWith("/")) {
-                        String origin = "https://crm.smartcrmsolution.com";
+                        String origin = "https://crm.nexterasoftlabs.com";
                         try {
                             String webUrl = getBridge().getWebView().getUrl();
                             if (webUrl != null) {
@@ -504,7 +504,7 @@ public class MainActivity extends BridgeActivity {
                 try {
                     String full = url;
                     if (full.startsWith("/")) {
-                        String origin = "https://crm.smartcrmsolution.com";
+                        String origin = "https://crm.nexterasoftlabs.com";
                         try {
                             String webUrl = getBridge().getWebView().getUrl();
                             if (webUrl != null) {
